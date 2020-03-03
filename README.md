@@ -114,7 +114,7 @@ create Book [
 		set title "The Prisoner of Aunt Kazban"
 	}
 	{
-		set title "The Goblet of Fire Cocktail"
+		set title "The Goblet of the Fire Cocktail"
 	}
 	{
 		set title "The Order for Kleenex"
@@ -123,7 +123,7 @@ create Book [
 		set title "The Half-Priced Pharmacy"
 	}
 	{
-		set title "Yeah, I got nothing"
+		set title "Yeah, I Got Nothing"
 	}
 ]
 ```

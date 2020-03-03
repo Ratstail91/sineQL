@@ -1,21 +1,21 @@
 //express for testing
 const express = require('express');
-const path = require('path');
 const app = express();
 
 //test the library
 const schema = require('./schema.js');
-//const handler = requre('./handler.js');
+const handler = require('./handler.js');
 const simpleQL = require('./simpleQL');
 
-const simple = simpleQL(schema);
+const simple = simpleQL(schema, handler);
 
 //open the end
-app.post('simpleQL', (req, res) => {
-	res.status(200).send(simple(req.body));
+app.post('/simpleql', (req, res) => {
+    const [code, result] = simple(req.body);
+    res.status(code).send(result);
 });
 
 //startup
-app.listen(process.env.WEB_PORT || 3100, (err) => {
-	console.log(`listening to *:${process.env.WEB_PORT || 3100}`);
+app.listen(process.env.WEB_PORT || 3100, err => {
+    console.log(`listening to *:${process.env.WEB_PORT || 3100}`);
 });

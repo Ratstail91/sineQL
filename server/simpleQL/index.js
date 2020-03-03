@@ -6,7 +6,7 @@ const main = (schema, handler) => {
 
 	//the receiving function - this will be called multiple times
 	return reqBody => {
-		return '';
+		return [200, ''];
 	};
 };
 
