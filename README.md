@@ -100,3 +100,30 @@ delete Book {
 
 You can use as many instances of `match` and `set` as you like, as long as the result is valid.
 
+You can create multiple records at once by surrounding them with `[]`:
+
+```
+create Book [
+	{
+		set title "The Philosepher's Kidney Stone"
+	}
+	{
+		set title "The Chamber Pot of Secrets"
+	}
+	{
+		set title "The Prisoner of Aunt Kazban"
+	}
+	{
+		set title "The Goblet of Fire Cocktail"
+	}
+	{
+		set title "The Order for Kleenex"
+	}
+	{
+		set title "The Half-Priced Pharmacy"
+	}
+	{
+		set title "Yeah, I got nothing"
+	}
+]
+```
