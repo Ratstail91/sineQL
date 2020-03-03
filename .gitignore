@@ -1,0 +1,23 @@
+#directories
+logs/**
+/**/coverage
+/**/node_modules
+/**/dl
+
+#passwords
+/**/*.pwd
+auth.json
+.env
+
+#log files
+/**/*.log
+
+#output files
+public/*.html
+public/*.js
+public/*.css
+public/*.map
+public/*.gz
+
+# Non npm lock files
+yarn.lock

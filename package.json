@@ -1,0 +1,17 @@
+{
+  "name": "simpleql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "node": "node server/server.js"
+  },
+  "author": "Kayne Ruse",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
