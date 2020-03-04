@@ -30,7 +30,7 @@ authors = authors.map(a => {
 	return a;
 });
 
-//get the book array
+//get the books array
 let books = [];
 
 authors.forEach(a => books = books.concat(a.books));
