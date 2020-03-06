@@ -22,9 +22,9 @@ const main = (schema, handler) => {
 
 				//no leading keyword - regular query
 				default:
-					const [result] = parseQuery(handler, tokens, pos, typeGraph[tokens[pos - 1]], typeGraph);
+					//TODO: parse the query
 
-					return [200, result];
+					return [200, ''];
 
 					//TODO
 					break;
@@ -41,10 +41,10 @@ const main = (schema, handler) => {
 const buildTypeGraph = schema => {
 	//the default graph
 	let graph = {
-		String: { scalar: true, nullable: true },
-		Integer: { scalar: true, nullable: true },
-		Float: { scalar: true, nullable: true },
-		Boolean: { scalar: true, nullable: true },
+		String: { scalar: true },
+		Integer: { scalar: true },
+		Float: { scalar: true },
+		Boolean: { scalar: true },
 	};
 
 	//parse the schema
@@ -63,6 +63,10 @@ const buildTypeGraph = schema => {
 				break;
 
 			case 'scalar':
+				if (['type', 'scalar'].includes(graph[tokens[pos]])) {
+					throw 'Unexpected keyword ' + graph[tokens[pos]];
+				}
+
 				graph[tokens[pos++]] = { scalar: true };
 				break;
 
@@ -106,6 +110,11 @@ const parseCompoundType = (tokens, pos) => {
 			type = type.slice(0, type.length - 2);
 		}
 
+		//can't use keywords
+		if (['type', 'scalar'].includes(type) || ['type', 'scalar'].includes(name)) {
+			throw 'Unexpected keyword found as type field or type name';
+		}
+
 		//no mangled types or names
 		checkAlphaNumeric(type);
 		checkAlphaNumeric(name);
@@ -119,51 +128,6 @@ const parseCompoundType = (tokens, pos) => {
 	}
 
 	return compound;
-};
-
-const parseQuery = (handler, tokens, pos, typeGraph, superTypeGraph) => {
-	//cache this for later
-	const startPos = pos;
-
-	//the opening brace
-	if (tokens[pos++] != '{') {
-		throw 'Expected \'{\' in query, found ' + tokens[pos - 1];
-	}
-
-	//the fields to pass to the handler
-	const queryFields = [];
-
-	//while not at the end
-	while (tokens[pos] != '}') {
-		//not the end of the query
-		if (!tokens[pos]) {
-			throw 'Expected field in query, got end';
-		}
-
-		//prevent using keywords
-		if (['create', 'update', 'delete', 'set', 'match'].includes(tokens[pos])) {
-			throw 'Unexpected keyword ' + tokens[pos];
-		}
-
-		//type is a scalar, and can be queried
-		if (superTypeGraph[typeGraph[tokens[pos]].typeName].scalar) {
-			//push the scalar object to the queryFields
-			queryFields.push({ typeName: typeGraph[tokens[pos]].typeName, name: tokens[pos] });
-
-			pos++;
-		} else {
-			//parse the subquery using the correct sub-typegraph
-			const [result, increment] = parseQuery(handler, tokens, pos + 1, superTypeGraph[typeGraph[tokens[pos]].typeName], superTypeGraph);
-
-			queryFields.push({ ...typeGraph[tokens[pos]], name: tokens[pos], subquery: handler[typeGraph[tokens[pos]].typeName](result) });
-
-			pos += increment + 1;
-		}
-	}
-
-	console.log(' handler', queryFields);
-
-	return [queryFields, pos - startPos];
 };
 
 //utils
