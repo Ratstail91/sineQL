@@ -12,17 +12,17 @@ const main = (schema, handler) => {
 
 		try {
 			//check for keywords
-			switch(tokens[pos++]) {
+			switch(tokens[pos]) {
 				case 'create':
 				case 'update':
 				case 'delete':
-					throw 'keyword not implemented';
+					throw 'keyword not implemented: ' + tokens[pos];
 					//TODO
 					break;
 
 				//no leading keyword - regular query
 				default:
-					//TODO: parse the query
+					parseQuery(handler, tokens, pos, typeGraph);
 
 					return [200, ''];
 
@@ -110,14 +110,19 @@ const parseCompoundType = (tokens, pos) => {
 			type = type.slice(0, type.length - 2);
 		}
 
+		//no mangled types or names
+		checkAlphaNumeric(type);
+		checkAlphaNumeric(name);
+
 		//can't use keywords
 		if (['type', 'scalar'].includes(type) || ['type', 'scalar'].includes(name)) {
 			throw 'Unexpected keyword found as type field or type name';
 		}
 
-		//no mangled types or names
-		checkAlphaNumeric(type);
-		checkAlphaNumeric(name);
+		//check for duplicate fields
+		if (Object.keys(compound).includes(name)) {
+			throw 'Unexpected duplicate filed name';
+		}
 
 		//finally, push to the compound definition
 		compound[name] = {
@@ -128,6 +133,10 @@ const parseCompoundType = (tokens, pos) => {
 	}
 
 	return compound;
+};
+
+const parseQuery = (handler, tokens, pos, typeGraph) => {
+	//TODO
 };
 
 //utils
