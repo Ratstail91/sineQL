@@ -141,7 +141,7 @@ const parseQuery = (handler, tokens, pos, typeGraph) => {
 
 //utils
 const checkAlphaNumeric = (str) => {
-	if (!/^[a-z0-9]+$/i.test(str)) {
+	if (!/^[_a-z][_a-z0-9]*$/i.test(str)) {
 		throw 'Unexpected string ' + str;
 	}
 };
