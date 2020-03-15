@@ -12,12 +12,12 @@ const simpleQL = require('./simpleQL');
 const simple = simpleQL(schema, handler);
 
 //open the end
-app.post('/simpleql', (req, res) => {
-    const [code, result] = simple(req.body);
-    res.status(code).send(result);
+app.post('/simpleql', async (req, res) => {
+	const [code, result] = await simple(req.body);
+	res.status(code).send(result);
 });
 
 //startup
 app.listen(process.env.WEB_PORT || 3100, err => {
-    console.log(`listening to *:${process.env.WEB_PORT || 3100}`);
+	console.log(`listening to *:${process.env.WEB_PORT || 3100}`);
 });

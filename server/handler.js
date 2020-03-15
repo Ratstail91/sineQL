@@ -45,7 +45,15 @@ const handler = {
 
 		//if this is a sub-query, use the parent to find the author
 		if (parent && parent.typeName == 'Book') {
-			return authors.find(a => a.books.filter(b => b.title == parent.context.title).length > 0);
+			const author = authors.find(a => a.books.filter(b => b.title == parent.context.title).length > 0);
+
+			//ensure only the named scalars are returned (hack)
+			const ret = {};
+			if (scalars.filter(s => s.name == 'name').length > 0) {
+				ret.name = author.name;
+			}
+
+			return [ret]; //must return an array
 		}
 
 		//return all authors
