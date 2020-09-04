@@ -11,7 +11,7 @@ const database = require('./database.js');
 //the handler routines
 const handler = {
 	Book: (parent, scalars) => {
-		//takes an object which is the result of the parent query, if there is one { typeName: 'Author', scalars: [scalars] }
+		//takes an object which is the result of the parent query, if there is one { typeName: 'Author', scalars: [scalars], context: the parent object }
 		//takes an array of scalar types as objects: { typeName: 'String', name: 'title' }
 		//must return an array of objects containing the results
 

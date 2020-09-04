@@ -1,5 +1,5 @@
 //reserved keywords that can't be used as identifiers
-const keywords = ['type', 'scalar'];
+const keywords = ['type', 'scalar', 'create', 'update', 'delete', 'set', 'match'];
 
 //the main function to be returned
 const main = (schema, handler) => {
@@ -146,42 +146,46 @@ const parseCompoundType = (tokens, pos) => {
 };
 
 const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
-	//returns an object result from handler
+	//returns an object result from handler for all custom types
 
-	//get the "parent object" contents for sub-objects
-//	const queryName = typeGraph[tokens[pos]] ? null : tokens[pos]; //if you're a type, name = null
-//	const queryType = typeGraph[tokens[pos]] ? tokens[pos] : typeGraph[parent.typeName][tokens[pos]].typeName; //use this type or derive the type from the parent
+	//determine this type
+	let queryType;
+
+	if (typeGraph[tokens[pos]] && typeGraph[tokens[pos]].scalar) {
+		queryType = tokens[pos];
+	}
+
+	else if (parent && typeGraph[parent.typeName][tokens[pos]]) {
+		queryType = typeGraph[parent.typeName][tokens[pos]].typeName;
+	} else {
+		queryType = tokens[pos];
+	}
 
 	//move on
 	pos++;
 
-	//the opening brace
 	if (tokens[pos++] != '{') {
-		throw 'Expected \'{\' in query, found ' + tokens[pos - 1];
+		throw 'Expected \'{\' after queried type';
 	}
 
 	//the scalars to pass to the handler
 	const scalarFields = [];
 	const deferredCalls = []; //functions (promises) that will be called at the end of this function
 
-	while(tokens[pos] != '}') { //while not at the end of this block
-		//not the end of the query
-		if (!tokens[pos]) {
-			throw 'Expected field in query, got end';
-		}
-
+	while(tokens[pos] && tokens[pos] != '}') { //while not at the end of this block
 		//prevent using keywords
-		if (['create', 'update', 'delete', 'set', 'match'].includes(tokens[pos])) {
+		if (keywords.includes(tokens[pos])) {
 			throw 'Unexpected keyword ' + tokens[pos];
 		}
 
 		//type is a scalar, and can be queried
-		if (typeGraph[typeGraph[tokens[pos]].typeName].scalar) {
+		if (typeGraph[queryType] && typeGraph[queryType][tokens[pos]] && typeGraph[typeGraph[queryType][tokens[pos]].typeName].scalar) {
 			//push the scalar object to the queryFields
-			scalarFields.push({ typeName: typeGraph[tokens[pos]].typeName, name: tokens[pos] });
+			scalarFields.push({ typeName: typeGraph[queryType][tokens[pos]].typeName, name: tokens[pos] });
 
 			pos++;
-		} else {
+		}
+		else if (typeGraph[queryType] && typeGraph[queryType][tokens[pos]] && !typeGraph[typeGraph[queryType][tokens[pos]].typeName].scalar) {
 			const pos2 = pos; //cache the value to keep it from changing
 
 			//recurse
@@ -190,10 +194,14 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 				tokens,
 				pos2,
 				typeGraph,
-				{ typeName: queryType, scalars: scalarFields } //parent object
+				{ typeName: queryType, scalars: scalarFields, context: result } //parent object
 			)]);
 
-			pos = eatBlock(tokens, pos);
+			pos = eatBlock(tokens, pos + 2);
+		} else {
+			//token is something else?
+			console.log('something else: ', tokens[pos], pos);
+			pos++;
 		}
 	}
 
@@ -202,7 +210,7 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 
 	let results = handler[queryType](parent, scalarFields);
 
-	//WTF
+	//WTF: related to the recusion above
 	results = await Promise.all(results.map(async res => {
 		const tuples = await Promise.all(deferredCalls.map(async call => await call(res)));
 
@@ -230,7 +238,7 @@ const eatBlock = (tokens, pos) => {
 		}
 	}
 
-	return ++pos;
+	return ++pos; //eat the final '}'
 };
 
 //return
