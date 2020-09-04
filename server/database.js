@@ -21,7 +21,7 @@ let authors = [
 	},
 ];
 
-//insert the authors into the books
+//insert the authors into the books (relationship)
 authors = authors.map(a => {
 	a.books = a.books.map(b => {
 		b.author = a;

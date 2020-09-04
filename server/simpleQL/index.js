@@ -1,13 +1,24 @@
+//reserved keywords that can't be used as identifiers
+const keywords = ['type', 'scalar'];
+
 //the main function to be returned
 const main = (schema, handler) => {
-	const typeGraph = buildTypeGraph(schema);
+	let typeGraph;
+
+	try {
+		typeGraph = buildTypeGraph(schema);
+	}
+	catch(e) {
+		console.log('caught in typegraph', e);
+		return null;
+	}
 
 	console.log(typeGraph);
 
 	//the receiving function - this will be called multiple times
 	return async reqBody => {
 		//parse the query
-		const tokens = reqBody.split(/(\s+)/).filter(s => s.trim().length > 0);
+		const tokens = reqBody.split(/(\s+)/).filter(s => s.trim().length > 0); //TODO: proper token parsing
 		let pos = 0;
 
 		try {
@@ -17,12 +28,12 @@ const main = (schema, handler) => {
 				case 'update':
 				case 'delete':
 					throw 'keyword not implemented: ' + tokens[pos];
-					//TODO
+					//TODO: implement these keywords
 					break;
 
 				//no leading keyword - regular query
 				default:
-					const result = await parseQuery(handler, tokens, pos, typeGraph[tokens[pos]], typeGraph);
+					const result = await parseQuery(handler, tokens, pos, typeGraph);
 
 					return [200, result];
 
@@ -47,7 +58,7 @@ const buildTypeGraph = schema => {
 	};
 
 	//parse the schema
-	const tokens = schema.split(/(\s+)/).filter(s => s.trim().length > 0);
+	const tokens = schema.split(/(\s+)/).filter(s => s.trim().length > 0); //TODO: proper token parsing
 	let pos = 0;
 
 	while (tokens[pos]) {
@@ -57,12 +68,12 @@ const buildTypeGraph = schema => {
 				graph[tokens[pos]] = parseCompoundType(tokens, pos);
 
 				//advance to the end of the compound type
-				while(tokens[pos] && tokens[pos++] != '}');
+				pos = eatBlock(tokens, pos + 2); //+2: skip the name & opening bracket
 
 				break;
 
 			case 'scalar':
-				if (['type', 'scalar'].includes(graph[tokens[pos]])) {
+				if (keywords.includes(graph[tokens[pos]])) {
 					throw 'Unexpected keyword ' + graph[tokens[pos]];
 				}
 
@@ -95,11 +106,11 @@ const parseCompoundType = (tokens, pos) => {
 
 		//parse the extra typing data
 		let array = false;
-		let nullable = true;
+		let required = false;
 
 		//not nullable
 		if (type[0] === '!') {
-			nullable = false;
+			required = true;
 			type = type.slice(1);
 		}
 
@@ -114,32 +125,32 @@ const parseCompoundType = (tokens, pos) => {
 		checkAlphaNumeric(name);
 
 		//can't use keywords
-		if (['type', 'scalar'].includes(type) || ['type', 'scalar'].includes(name)) {
-			throw 'Unexpected keyword found as type field or type name';
+		if (keywords.includes(type) || keywords.includes(name)) {
+			throw 'Unexpected keyword found as type field or type name (' + type + ' ' + name + ')';
 		}
 
 		//check for duplicate fields
 		if (Object.keys(compound).includes(name)) {
-			throw 'Unexpected duplicate filed name';
+			throw 'Unexpected duplicate field name';
 		}
 
 		//finally, push to the compound definition
 		compound[name] = {
 			typeName: type,
 			array: array,
-			nullable: nullable,
+			required: required,
 		};
 	}
 
 	return compound;
 };
 
-const parseQuery = async (handler, tokens, pos, typeGraph, superTypeGraph, parent = null) => {
+const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 	//returns an object result from handler
 
 	//get the "parent object" contents for sub-objects
-	const queryName = superTypeGraph[tokens[pos]] ? null : tokens[pos]; //if you're a type, name = null
-	const queryType = superTypeGraph[tokens[pos]] ? tokens[pos] : superTypeGraph[parent.typeName][tokens[pos]].typeName; //use this type or derive the type from the parent
+//	const queryName = typeGraph[tokens[pos]] ? null : tokens[pos]; //if you're a type, name = null
+//	const queryType = typeGraph[tokens[pos]] ? tokens[pos] : typeGraph[parent.typeName][tokens[pos]].typeName; //use this type or derive the type from the parent
 
 	//move on
 	pos++;
@@ -165,7 +176,7 @@ const parseQuery = async (handler, tokens, pos, typeGraph, superTypeGraph, paren
 		}
 
 		//type is a scalar, and can be queried
-		if (superTypeGraph[typeGraph[tokens[pos]].typeName].scalar) {
+		if (typeGraph[typeGraph[tokens[pos]].typeName].scalar) {
 			//push the scalar object to the queryFields
 			scalarFields.push({ typeName: typeGraph[tokens[pos]].typeName, name: tokens[pos] });
 
@@ -178,9 +189,8 @@ const parseQuery = async (handler, tokens, pos, typeGraph, superTypeGraph, paren
 				handler,
 				tokens,
 				pos2,
-				superTypeGraph[typeGraph[tokens[pos2]].typeName],
-				superTypeGraph,
-				{ typeName: queryType, scalars: scalarFields, context: result }
+				typeGraph,
+				{ typeName: queryType, scalars: scalarFields } //parent object
 			)]);
 
 			pos = eatBlock(tokens, pos);
@@ -192,6 +202,7 @@ const parseQuery = async (handler, tokens, pos, typeGraph, superTypeGraph, paren
 
 	let results = handler[queryType](parent, scalarFields);
 
+	//WTF
 	results = await Promise.all(results.map(async res => {
 		const tuples = await Promise.all(deferredCalls.map(async call => await call(res)));
 
@@ -219,7 +230,7 @@ const eatBlock = (tokens, pos) => {
 		}
 	}
 
-	return pos;
+	return ++pos;
 };
 
 //return
