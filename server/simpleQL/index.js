@@ -17,11 +17,11 @@ const main = (schema, handler) => {
 
 	//the receiving function - this will be called multiple times
 	return async reqBody => {
-		//parse the query
-		const tokens = reqBody.split(/(\s+)/).filter(s => s.trim().length > 0); //TODO: proper token parsing
-		let pos = 0;
-
 		try {
+			//parse the query
+			const tokens = reqBody.split(/(\s+)/).filter(s => s.trim().length > 0); //TODO: proper token parsing
+			let pos = 0;
+
 			//check for keywords
 			switch(tokens[pos]) {
 				case 'create':
@@ -168,11 +168,18 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 		throw 'Expected \'{\' after queried type';
 	}
 
-	//the scalars to pass to the handler
+	//the scalars to pass to the handler - these are NEIGHBOURS in the hierarchy
 	const scalarFields = [];
 	const deferredCalls = []; //functions (promises) that will be called at the end of this function
 
 	while(tokens[pos] && tokens[pos] != '}') { //while not at the end of this block
+		let match = false;
+
+		if (tokens[pos] === 'match') {
+			match = true;
+			pos++;
+		}
+
 		//prevent using keywords
 		if (keywords.includes(tokens[pos])) {
 			throw 'Unexpected keyword ' + tokens[pos];
@@ -181,7 +188,12 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 		//type is a scalar, and can be queried
 		if (typeGraph[queryType] && typeGraph[queryType][tokens[pos]] && typeGraph[typeGraph[queryType][tokens[pos]].typeName].scalar) {
 			//push the scalar object to the queryFields
-			scalarFields.push({ typeName: typeGraph[queryType][tokens[pos]].typeName, name: tokens[pos] });
+			scalarFields.push({ typeName: typeGraph[queryType][tokens[pos]].typeName, name: tokens[pos], match: match ? tokens[++pos] : null });
+			
+			//if I am a scalar child of a match amd I do not match
+			if (parent && parent.match && !match) {
+				throw 'Broken match chain in scalar type ' + tokens[pos];
+			}
 
 			pos++;
 		}
@@ -189,24 +201,34 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 			const pos2 = pos; //cache the value to keep it from changing
 
 			//recurse
-			deferredCalls.push(async (result) => [tokens[pos2], await parseQuery(
-				handler,
-				tokens,
-				pos2,
-				typeGraph,
-				{ typeName: queryType, scalars: scalarFields, context: result } //parent object
-			)]);
+			deferredCalls.push(async (result) => {
+				//if I am a compound child of a match amd I do not match
+				if (parent && parent.match && !match) {
+					throw 'Broken match chain in compound type ' + tokens[pos2];
+				}
+
+				return [tokens[pos2], await parseQuery(
+					handler,
+					tokens,
+					pos2,
+					typeGraph,
+					{ typeName: queryType, scalars: scalarFields, context: result, match: match } //parent object (this one)
+				), match]; //HACK: match piggybacking on the tuple
+			});
 
 			pos = eatBlock(tokens, pos + 2);
 		} else {
 			//token is something else?
-			console.log('something else: ', tokens[pos], pos);
-			pos++;
+			throw 'Found something not in the type graph: ' + tokens[pos] + " " + pos;
 		}
 	}
 
 	//eat the end bracket
 	pos++;
+	
+	if (!handler[queryType]) {
+		throw 'Unrecognized type ' + queryType;
+	}
 
 	let results = handler[queryType](parent, scalarFields);
 
@@ -214,11 +236,17 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 	results = await Promise.all(results.map(async res => {
 		const tuples = await Promise.all(deferredCalls.map(async call => await call(res)));
 
+		if (!tuples.every(tuple => !tuple[2] || tuple[1].length > 0)) {
+			console.log('discarding', tuples);
+			return [];
+		}
+
 		tuples.forEach(tuple => res[tuple[0]] = tuple[1]);
 
 		return res;
 	}));
 
+	results = results.filter(r => Array.isArray(r) && r.length == 0 ? false : true);
 	return results;
 };
 

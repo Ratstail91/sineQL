@@ -19,6 +19,17 @@ let authors = [
 			{ title: 'The Wind in the Willows', published: '1 April 1908' }
 		]
 	},
+	
+	{
+		name: 'KayneRuse',
+		books: [
+			{ title: 'alpha', published: "1" },
+			{ title: 'beta', published: "2" },
+			{ title: 'gamma', published: "3" },
+			{ title: 'delta', published: "4" },
+			{ title: 'epsilon', published: "5" },
+		]
+	},
 ];
 
 //insert the authors into the books (relationship)

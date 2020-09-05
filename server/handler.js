@@ -2,7 +2,7 @@ const database = require('./database.js');
 
 /* DOCS: The handler module connects the database to simpleQL.
  * this will be user-implemented, but for now uses a fake database provided in database.js
- * The 'scalars' will be objects containing a name and the type for each scalar field requested by a query.
+ * The 'scalars' will be objects containing a name and theh type for each scalar field requested by a query.
  * This can be used in several ways...
  *
  * The handlers should only handle scalar fields - compound fields will be queried separately by simpleQL.
@@ -11,19 +11,26 @@ const database = require('./database.js');
 //the handler routines
 const handler = {
 	Book: (parent, scalars) => {
-		//takes an object which is the result of the parent query, if there is one { typeName: 'Author', scalars: [scalars], context: the parent object }
-		//takes an array of scalar types as objects: { typeName: 'String', name: 'title' }
+		//takes an object which is the result of the parent query, if there is one { typeName: 'Author', scalars: [scalars], context: the parent object, match: I am being matched }
+		//takes an array of scalar types as objects: { typeName: 'String', name: 'title', match: filter }
 		//must return an array of objects containing the results
 
 		let books = database.books;
 
-		//if this is a sub-query, use the parent to narrow the search
+		//if this is a sub-query of Author, use the parent to narrow the search
 		if (parent && parent.typeName == 'Author') {
 			//filter based on parent object
 			books = books.filter(b => b.author.name == parent.context.name);
 		}
 
-		//return all books
+		//if this query has a matched scalar, filter by that match
+		books = books.filter(b => {
+			return scalars.every(s => {
+				return !s.match || b[s.name] === s.match; //other filter methods, such as ranges of numbers, can also be implemented
+			});
+		});
+
+		//return all books after filtering
 		const fields = scalars.map(s => s.name);
 		return books.map(b => {
 			const ret = {};
@@ -43,18 +50,18 @@ const handler = {
 	Author: (parent, scalars) => {
 		let authors = database.authors;
 
-		//if this is a sub-query, use the parent to find the author
+		//if this is a sub-query of Book, use the parent to find the author
 		if (parent && parent.typeName == 'Book') {
-			const author = authors.find(a => a.books.filter(b => b.title == parent.context.title).length > 0);
-
-			//ensure only the named scalars are returned (hack)
-			const ret = {};
-			if (scalars.filter(s => s.name == 'name').length > 0) {
-				ret.name = author.name;
-			}
-
-			return [ret]; //must return an array
+			//filter based on parent object
+			authors = authors.filter(a => a.books.some(b => b.title === parent.context.title));
 		}
+
+		//if this query has a matched scalar, filter by that match
+		authors = authors.filter(a => {
+			return scalars.every(s => {
+				return !s.match || a[s.name] === s.match; //other filter methods, such as ranges of numbers, can also be implemented
+			});
+		});
 
 		//return all authors
 		const fields = scalars.map(s => s.name);
