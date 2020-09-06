@@ -21,7 +21,7 @@ let authors = [
 	},
 	
 	{
-		name: 'KayneRuse',
+		name: 'Kayne Ruse',
 		books: [
 			{ title: 'alpha', published: "1" },
 			{ title: 'beta', published: "2" },

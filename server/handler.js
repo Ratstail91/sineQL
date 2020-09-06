@@ -26,11 +26,11 @@ const handler = {
 		//if this query has a matched scalar, filter by that match
 		books = books.filter(b => {
 			return scalars.every(s => {
-				return !s.match || b[s.name] === s.match; //other filter methods, such as ranges of numbers, can also be implemented
+				return !s.match || b[s.name].toUpperCase() === s.match.toUpperCase(); //other filter methods, such as ranges of numbers, can also be implemented
 			});
 		});
 
-		//return all books after filtering
+		//return all book fields after filtering
 		const fields = scalars.map(s => s.name);
 		return books.map(b => {
 			const ret = {};
@@ -59,11 +59,11 @@ const handler = {
 		//if this query has a matched scalar, filter by that match
 		authors = authors.filter(a => {
 			return scalars.every(s => {
-				return !s.match || a[s.name] === s.match; //other filter methods, such as ranges of numbers, can also be implemented
+				return !s.match || a[s.name].toUpperCase() === s.match.toUpperCase(); //other filter methods, such as ranges of numbers, can also be implemented
 			});
 		});
 
-		//return all authors
+		//return all author fields after filtering
 		const fields = scalars.map(s => s.name);
 		return authors.map(a => {
 			const ret = {};
