@@ -229,7 +229,7 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 
 	//eat the end bracket
 	if (tokens[pos - 1] !== '}') {
-		throw 'Expected \'}\' at the end of query (found ' + tokens[pos] + ')';
+		throw 'Expected \'}\' at the end of query (found ' + tokens[pos - 1] + ')';
 	}
 
 	if (!handler[queryType]) {
@@ -311,10 +311,11 @@ const lexify = (body, allowStrings) => {
 
 				//anything else is a multi-character token
 				const start = current;
-				while(body[current - 1] && !/[{}"\s]/.test(body[current - 1])) {
+				while(body[current] && !/[{}"\s]/.test(body[current])) {
+					console.log('advancing past', body[current]);
 					current++;
 				}
-				tokens.push(body.substring(start - 1, current - 1));
+				tokens.push(body.substring(start - 1, current));
 				break;
 			}
 		}

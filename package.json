@@ -7,11 +7,16 @@
     "doc": "docs"
   },
   "scripts": {
+    "start": "pm2 start server/server.js",
+    "restart": "pm2 restart server/server.js",
+    "stop": "pm2 stop server/server.js",
+    "list": "pm2 list",
     "node": "node server/server.js"
   },
   "author": "Kayne Ruse",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "pm2": "^4.4.1"
   }
 }
