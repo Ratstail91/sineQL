@@ -1,14 +1,18 @@
 module.exports = `
-scalar Date
-
-type Book {
-	String title
-	Author author
-	Date published
+type Pokemon {
+	String name
+	Integer height
+	Integer weight
+	Stats stats
+	Pokemon forms
 }
 
-type Author {
-	String name
-	Book books
+type Stats {
+	Integer hp
+	Integer attack
+	Integer defense
+	Integer specialAttack
+	Integer specialDefense
+	Integer speed
 }
 `;

@@ -217,7 +217,7 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 					{ typeName: queryType, scalars: scalarFields, context: result, match: match } //parent object (this one)
 				);
 
-				return [tokens[pos2], queryResult, match]; //HACK: match piggybacking on the tuple
+				return [tokens[pos2 - 1], queryResult, match]; //HACK: match piggybacking on the tuple
 			});
 
 			pos = eatBlock(tokens, pos + 2);
