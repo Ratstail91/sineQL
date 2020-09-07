@@ -84,6 +84,11 @@ const handler = {
 		//return all pokemon fields after filtering
 		const fields = scalars.map(s => s.name);
 		return filteredPokemon.map(p => {
+			//BUGFIX
+			if (!p.base_stats) {
+				return null;
+			}
+
 			const ret = {};
 
 			if (fields.includes('hp')) {
