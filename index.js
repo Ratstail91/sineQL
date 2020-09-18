@@ -107,22 +107,6 @@ const parseCompoundType = (tokens, pos) => {
 		let type = tokens[pos++];
 		const name = tokens[pos];
 
-		//parse the extra typing data
-		let array = false;
-		let required = false;
-
-		//not nullable
-		if (type[0] === '!') {
-			required = true;
-			type = type.slice(1);
-		}
-
-		//is array
-		if (type.endsWith('[]')) {
-			array = true;
-			type = type.slice(0, type.length - 2);
-		}
-
 		//no mangled types or names
 		checkAlphaNumeric(type);
 		checkAlphaNumeric(name);
@@ -139,9 +123,7 @@ const parseCompoundType = (tokens, pos) => {
 
 		//finally, push to the compound definition
 		compound[name] = {
-			typeName: type,
-			array: array,
-			required: required,
+			typeName: type
 		};
 	}
 
@@ -312,7 +294,6 @@ const lexify = (body, allowStrings) => {
 				//anything else is a multi-character token
 				const start = current;
 				while(body[current] && !/[{}"\s]/.test(body[current])) {
-					console.log('advancing past', body[current]);
 					current++;
 				}
 				tokens.push(body.substring(start - 1, current));
@@ -321,7 +302,6 @@ const lexify = (body, allowStrings) => {
 		}
 	}
 
-	console.log(tokens);
 	return tokens;
 };
 

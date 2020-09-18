@@ -8,13 +8,13 @@ app.use(bodyParser.text());
 //test the library
 const schema = require('./schema.js');
 const handler = require('./handler.js');
-const simpleQL = require('./simpleQL');
+const sineQL = require('../index.js');
 
-const simple = simpleQL(schema, handler);
+const sine = sineQL(schema, handler);
 
 //open the end
 app.post('/simpleql', async (req, res) => {
-	const [code, result] = await simple(req.body);
+	const [code, result] = await sine(req.body);
 	res.status(code).send(result);
 });
 

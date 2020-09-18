@@ -1,0 +1,19 @@
+{
+  "name": "test-server",
+  "version": "0.2.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "pm2 start server.js",
+    "restart": "pm2 restart server.js",
+    "stop": "pm2 stop server.js",
+    "list": "pm2 list",
+    "node": "node server.js"
+  },
+  "author": "Kayne Ruse",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "pm2": "^4.4.1"
+  }
+}

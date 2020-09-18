@@ -1,6 +1,6 @@
-simpleQL is a web API query language that mimics graphQL, designed solely for fun.
+sineQL is a web API query language that mimics graphQL, designed solely for fun.
 
-simpleQL consists of two languages - the schema language, and the query language.
+sineQL consists of two languages - the schema language, and the query language.
 
 ## The Schema Language
 
@@ -30,12 +30,10 @@ type Book {
 }
 
 type Author {
-	!String name
-	!Book[] books
+	String name
+	Book books
 }
 ```
-
-`[]` Represents an array of fields, while `!` represents a field that must not be omitted in queries (non-nullable).
 
 ## The Query Language
 
