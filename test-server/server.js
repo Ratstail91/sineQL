@@ -13,7 +13,7 @@ const sineQL = require('../index.js');
 const sine = sineQL(schema, handler);
 
 //open the end
-app.post('/simpleql', async (req, res) => {
+app.post('/sineql', async (req, res) => {
 	const [code, result] = await sine(req.body);
 	res.status(code).send(result);
 });

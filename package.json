@@ -1,0 +1,24 @@
+{
+  "name": "sineql",
+  "version": "0.2.0",
+  "description": "A simple to use graphQL clone",
+  "main": "index.js",
+  "scripts": {
+    "test": "cd test-server && npm install && npm run node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ratstail91/sineQL.git"
+  },
+  "keywords": [
+    "graphql",
+    "rest",
+    "query"
+  ],
+  "author": "Kayne Ruse",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ratstail91/sineQL/issues"
+  },
+  "homepage": "https://github.com/Ratstail91/sineQL#readme"
+}
