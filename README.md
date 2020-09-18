@@ -1,6 +1,36 @@
+# Things That Need To Be Done
+
+* GitHub CI testing
+* Updade the README
+* Implement the create command
+* Implement the update command
+* Implement the delete command
+
+# sineQL
+
 sineQL is a web API query language that mimics graphQL, designed solely for fun.
 
 sineQL consists of two languages - the schema language, and the query language.
+
+You can try the language out right now!
+
+```js
+//create the wave function, wrapping a fetch to a server
+const wave = body => fetch('https://krgamestudios.com/pokemon', {
+    method: 'POST',
+    headers: {
+       'Content-Type': 'text/plain'
+    },
+    body: body
+});
+
+//get a list of pokemon names
+wave('Pokemon { name }')
+    .then(blob => blob.text())
+    .then(text => console.log(text))
+    .catch(err => console.log(err))
+;
+```
 
 ## The Schema Language
 
