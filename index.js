@@ -27,7 +27,7 @@ const main = (schema, handler) => {
 				case 'create':
 				case 'update':
 				case 'delete':
-					return [501, 'keyword not implemented: ' + tokens[pos]];
+					return [501, 'Keyword not implemented: ' + tokens[pos]];
 					//TODO: implement these keywords
 					break;
 
@@ -46,7 +46,7 @@ const main = (schema, handler) => {
 			}
 		}
 		catch(e) {
-			console.log('caught', e);
+			console.log('Error:', e);
 			return [400, e.stack || e];
 		}
 	};
