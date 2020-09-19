@@ -27,7 +27,7 @@ const main = (schema, handler) => {
 				case 'create':
 				case 'update':
 				case 'delete':
-					throw 'keyword not implemented: ' + tokens[pos];
+					return [501, 'keyword not implemented: ' + tokens[pos]];
 					//TODO: implement these keywords
 					break;
 
