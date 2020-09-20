@@ -12,7 +12,7 @@ sineQL is a web API query language that mimics graphQL, designed solely for fun.
 
 sineQL consists of two languages - the schema language, and the query language.
 
-You can try the language out right now!
+You can try the API right now!
 
 ```js
 //create the wave function, wrapping a fetch to a server
