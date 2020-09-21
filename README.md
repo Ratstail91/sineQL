@@ -1,6 +1,7 @@
 # Things That Need To Be Done
 
-* Debugging options
+* ~~Debugging options~~
+* N + 1 problem solved
 * Full documentation
 * Graphical tool
 * GitHub CI testing

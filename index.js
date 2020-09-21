@@ -2,24 +2,22 @@
 const keywords = ['type', 'scalar', 'create', 'update', 'delete', 'set', 'match'];
 
 //the main function to be returned
-const main = (schema, handler) => {
+const main = (schema, handler, options = {}) => {
 	let typeGraph;
 
 	try {
-		typeGraph = buildTypeGraph(schema);
+		typeGraph = buildTypeGraph(schema, options);
 	}
 	catch(e) {
-		console.log('caught in typegraph', e);
+		console.log('Type Graph Error:', e);
 		return null;
 	}
-
-	console.log(typeGraph);
 
 	//the receiving function - this will be called multiple times
 	return async reqBody => {
 		try {
 			//parse the query
-			const tokens = lexify(reqBody, true);
+			const tokens = lexify(reqBody, true, options);
 			let pos = 0;
 
 			//check for keywords
@@ -53,7 +51,7 @@ const main = (schema, handler) => {
 };
 
 //parse the schema into a type graph
-const buildTypeGraph = schema => {
+const buildTypeGraph = (schema, options) => {
 	//the default graph
 	let graph = {
 		String: { scalar: true },
@@ -63,14 +61,14 @@ const buildTypeGraph = schema => {
 	};
 
 	//parse the schema
-	const tokens = lexify(schema, false);
+	const tokens = lexify(schema, false, options);
 	let pos = 0;
 
 	while (tokens[pos++]) {
 		//check for keywords
 		switch(tokens[pos - 1]) {
 			case 'type':
-				graph[tokens[pos++]] = parseCompoundType(tokens, pos);
+				graph[tokens[pos++]] = parseCompoundType(tokens, pos, options);
 
 				//advance to the end of the compound type
 				pos = eatBlock(tokens, pos);
@@ -90,10 +88,14 @@ const buildTypeGraph = schema => {
 		}
 	}
 
+	if (options.debug) {
+		console.log('Type Graph:\n', graph);
+	}
+
 	return graph;
 };
 
-const parseCompoundType = (tokens, pos) => {
+const parseCompoundType = (tokens, pos, options) => {
 	//format check (not strictly necessary, but it looks nice)
 	if (tokens[pos] !== '{') {
 		throw 'Expected \'{\' in compound type definition';
@@ -125,6 +127,10 @@ const parseCompoundType = (tokens, pos) => {
 		compound[name] = {
 			typeName: type
 		};
+	}
+
+	if (options.debug) {
+		console.log('Compound Type:\n', compound);
 	}
 
 	return compound;
@@ -258,7 +264,7 @@ const eatBlock = (tokens, pos) => {
 	return pos;
 };
 
-const lexify = (body, allowStrings) => {
+const lexify = (body, allowStrings, options) => {
 	let current = 0;
 	tokens = [];
 
@@ -300,6 +306,10 @@ const lexify = (body, allowStrings) => {
 				break;
 			}
 		}
+	}
+
+	if (options.debug) {
+		console.log('Lexify:\n', tokens);
 	}
 
 	return tokens;
