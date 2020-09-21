@@ -1,5 +1,6 @@
 # Things That Need To Be Done
 
+* Full documentation
 * GitHub CI testing
 * Updade the README
 * Implement the create command
