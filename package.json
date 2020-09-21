@@ -2,7 +2,7 @@
   "name": "sineql",
   "version": "0.2.1",
   "description": "A simple to use graphQL clone",
-  "main": "index.js",
+  "main": "source/index.js",
   "scripts": {
     "test": "cd test-server && npm install && npm run node"
   },

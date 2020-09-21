@@ -11,9 +11,9 @@ app.use(bodyParser.text());
 //test the library
 const schema = require('./schema.js');
 const handler = require('./handler.js');
-const sineQL = require('../index.js');
+const sineQL = require('../source/index.js');
 
-const sine = sineQL(schema, handler);
+const sine = sineQL(schema, handler, { debug: true });
 
 //open the end
 app.post('/sineql', async (req, res) => {
