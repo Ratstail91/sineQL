@@ -1,8 +1,9 @@
 # Things That Need To Be Done
 
+* Debugging options
 * Full documentation
+* Graphical tool
 * GitHub CI testing
-* Updade the README
 * Implement the create command
 * Implement the update command
 * Implement the delete command
