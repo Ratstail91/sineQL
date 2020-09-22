@@ -2,36 +2,44 @@ const keywords = require('./keywords.json');
 const { eatBlock } = require('./utils');
 
 //returns an object result from handler for all custom types
-const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
+const parseQuery = async (handler, tokens, pos, typeGraph, parent = null, superMatching = false) => {
 	//only read past tokens
 	pos++;
 
 	//determine this query's supertype
-	let queryType;
+	let superType;
 
-	if (typeGraph[tokens[pos - 1]] && typeGraph[tokens[pos - 1]].scalar) {
-		queryType = tokens[pos - 1];
+	if (!parent) { //top-level
+		superType = tokens[pos - 1];
 	}
 
-	else if (parent && typeGraph[parent.typeName][tokens[pos - 1]]) {
-		queryType = typeGraph[parent.typeName][tokens[pos - 1]].typeName;
-	} else {
-		queryType = tokens[pos - 1];
+	else if (typeGraph[parent.typeName][ tokens[pos-1] ]) {
+		superType = typeGraph[parent.typeName][ tokens[pos-1] ].typeName;
+	}
+
+	else {
+		throw `Missing supertype in type graph (pos = ${pos})`;
+	}
+
+	//error handling
+	if (!handler[superType]) {
+		throw 'Unrecognized type ' + superType;
 	}
 
 	if (tokens[pos++] != '{') {
-		throw 'Expected \'{\' after queried type';
+		throw 'Expected \'{\' after supertype';
 	}
 
-	//the scalars to pass to the handler - these are NEIGHBOURS in the hierarchy
+	//the scalars to pass to the handler - components of the compound types
 	const scalarFields = [];
 	const deferredCalls = []; //functions (promises) that will be called at the end of this function
 
 	while(tokens[pos++] && tokens[pos - 1] !== '}') { //while not at the end of this block
-		let match = false;
+		//check for matching flag
+		let matching = false;
 
 		if (tokens[pos - 1] === 'match') {
-			match = true;
+			matching = true;
 			pos++;
 		}
 
@@ -40,24 +48,25 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 			throw 'Unexpected keyword ' + tokens[pos - 1];
 		}
 
-		//type is a scalar, and can be queried
-		if (typeGraph[queryType] && typeGraph[queryType][tokens[pos - 1]] && typeGraph[typeGraph[queryType][tokens[pos - 1]].typeName].scalar) {
+		//type is a scalar
+		if (typeGraph[superType] && typeGraph[superType][tokens[pos - 1]] && typeGraph[typeGraph[superType][tokens[pos - 1]].typeName].scalar) {
 			//push the scalar object to the queryFields
-			scalarFields.push({ typeName: typeGraph[queryType][tokens[pos - 1]].typeName, name: tokens[pos - 1], match: match ? tokens[pos++] : null });
+			scalarFields.push({ typeName: typeGraph[superType][tokens[pos - 1]].typeName, name: tokens[pos - 1], filter: matching ? tokens[pos++] : null });
 
 			//if I am a scalar child of a match amd I do not match
-			if (parent && parent.match && !match) {
+			if (parent && superMatching && !matching) {
 				throw 'Broken match chain in scalar type ' + tokens[pos - 1];
 			}
 		}
 
-		else if (typeGraph[queryType] && typeGraph[queryType][tokens[pos - 1]] && !typeGraph[typeGraph[queryType][tokens[pos - 1]].typeName].scalar) {
+		//type is a compound, and must be recursed
+		else if (typeGraph[superType] && typeGraph[superType][tokens[pos - 1]]) {
 			const pos2 = pos; //cache the value to keep it from changing
 
 			//recurse
 			deferredCalls.push(async (result) => {
 				//if I am a compound child of a match amd I do not match
-				if (parent && parent.match && !match) {
+				if (parent && superMatching && !matching) {
 					throw 'Broken match chain in compound type ' + tokens[pos2 - 1];
 				}
 
@@ -66,10 +75,11 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 					tokens,
 					pos2 - 1,
 					typeGraph,
-					{ typeName: queryType, scalars: scalarFields, context: result, match: match } //parent object (this one)
+					{ typeName: superType, scalars: scalarFields, context: result }, //parent object (this one)
+					matching
 				);
 
-				return [tokens[pos2 - 1], queryResult, match]; //HACK: match piggybacking on the tuple
+				return [tokens[pos2 - 1], queryResult, matching]; //HACK: match piggybacking on the tuple
 			});
 
 			pos = eatBlock(tokens, pos + 2);
@@ -84,13 +94,9 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 		throw 'Expected \'}\' at the end of query (found ' + tokens[pos - 1] + ')';
 	}
 
-	if (!handler[queryType]) {
-		throw 'Unrecognized type ' + queryType;
-	}
+	let results = handler[superType](parent, scalarFields, superMatching);
 
-	let results = handler[queryType](parent, scalarFields);
-
-	//WTF: related to the recusion above
+	//WTF: related to the recusion above (turning the results inside out?)
 	results = await Promise.all(results.map(async res => {
 		const tuples = await Promise.all(deferredCalls.map(async call => await call(res)));
 
@@ -103,7 +109,8 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null) => {
 		return res;
 	}));
 
-	results = results.filter(r => Array.isArray(r) && r.length == 0 ? false : true);
+	results = results.filter(r => !Array.isArray(r) || r.length > 0);
+
 	return [results, pos];
 };
 

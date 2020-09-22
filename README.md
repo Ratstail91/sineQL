@@ -2,6 +2,7 @@
 
 * ~~Debugging options~~
 * N + 1 problem solved
+* Change "match" to "filter"
 * Full documentation
 * Graphical tool
 * GitHub CI testing

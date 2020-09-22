@@ -4,7 +4,7 @@
   "description": "A simple to use graphQL clone",
   "main": "source/index.js",
   "scripts": {
-    "test": "cd test-server && npm install && npm run node"
+    "test": "cd test-server-books && npm install && npm run node"
   },
   "repository": {
     "type": "git",
