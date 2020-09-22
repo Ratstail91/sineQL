@@ -1,134 +1,178 @@
-const pokemon = require('./pokemon.json');
+/* DOCS: handler parameter types
+parent: Type | null
+scalars: [{ typeName: String, name: String, filter: any | null }, ...]
+matching: Boolean
+*/
+
+const database = require('./pokemon.json');
 
 //the handler routines
 const handler = {
-	Pokemon: (parent, scalars) => {
-		//takes an object which is the result of the parent query, if there is one { typeName: String, scalars: [scalars], context: the parent object, match: I am being matched }
-		//takes an array of scalar types as objects: { typeName: 'String', name: 'String', match: filter }
-		//must return an array of objects containing the results
+	Pokemon: (parent, scalars, matching) => {
+		throw 'Nothing here is working';
 
-		let filteredPokemon = pokemon;
+		let pokemon = database;
 
 		//if this is a sub-query of Pokemon (a form), use the parent to narrow the search
 		if (parent && parent.typeName == 'Pokemon') {
-			//filter based on parent object
-			filteredPokemon = filteredPokemon.filter(poke => poke.name == parent.context.name);
-			filteredPokemon = filteredPokemon[0].forms;
+			//filter based on parent object + scalars
+			pokemon = pokemon.filter(poke => {
+				return scalars.every(scalar => poke[scalar.name] == parent.context[scalar.name]);
+			});
+
+			pokemon = pokemon.map(poke => poke.forms)[0];
 		}
 
-		//if this query has a matched scalar, filter by that match
-		filteredPokemon = filteredPokemon.filter(poke => {
-			return scalars.every(s => {
-				if (!s.match) {
-					return true;
-				}
+		//I am being matched (if true, ALL present scalars will have a filter field)
+		if (matching) {
+			//check every scalar to every poke - a single false match is a miss on that poke
+			pokemon = pokemon.filter(poke => {
+				return scalars.every(scalar => {
+					//handle each type of scalar
+					switch (scalar.typeName) {
+						case 'String':
+						case 'Integer':
+						case 'Float':
+						case 'Boolean':
+							return poke[scalar.name].toString() == scalar.filter; //dumb comparison for now
 
-				if (typeof poke[s.name] == 'string') {
-					return poke[s.name].toUpperCase() === s.match.toUpperCase(); //other filter methods, such as ranges of numbers, can also be implemented
-				}
-
-				if (typeof poke[s.name] == 'number') {
-					return poke[s.name] == s.match;
-				}
-
-				//handle form-only pokemon
-				if (typeof poke[s.name] == 'undefined') {
-					return false;
-				}
-
-				throw 'Unknown match type in Pokemon handler';
+						default:
+							throw `Unknown scalar typeName in handler: ${scalar.typeName} (${scalar.name})`;
+					}
+				});
 			});
-		});
 
-		//return all pokemon fields after filtering
-		const fields = scalars.map(s => s.name);
-		return filteredPokemon.map(p => {
-			const ret = {};
-
-			if (fields.includes('name')) {
-				ret.name = p.name;
+			//if there are no pokemon left, then the filters missed matches
+			if (pokemon.length == 0) {
+				return [];
 			}
+		}
 
-			if (fields.includes('height')) {
-				ret.height = p.height;
-			}
+		//scalars are being matched on their own
+		if (scalars.some(s => s.filter)) {
+			//check every scalar to every poke - a single match is a hit
+			pokemon = pokemon.filter(poke => {
+				return scalars.some(scalar => {
+					//handle each type of scalar
+					switch (scalar.typeName) {
+						case 'String':
+						case 'Integer':
+						case 'Float':
+						case 'Boolean':
+							console.log(scalar, poke[scalar.name]);
+							return poke[scalar.name].toString() == scalar.filter; //dumb comparison for now
 
-			if (fields.includes('weight')) {
-				ret.weight = p.weight;
+						default:
+							throw `Unknown scalar typeName in handler: ${scalar.typeName} (${scalar.name})`;
+					}
+				});
+			});
+
+			//if there are no pokemon left, then the filters missed matches
+			if (pokemon.length == 0) {
+				return [];
 			}
+		}
+
+		//process (filter out unwanted fields) and return the array of pokemon
+		return pokemon.map(poke => {
+			let ret = {};
+
+			//that's a big O(damn)
+			scalars.forEach(scalar => {
+				ret[scalar.name] = poke[scalar.name];
+			});
 
 			return ret;
 		});
 	},
 
-	Stats: (parent, scalars) => {
+	Stats: (parent, scalars, matching) => {
+		throw 'Nothing here is working';
+
 		if (!parent || parent.typeName != 'Pokemon') {
 			throw 'Stats must be inside a Pokemon query';
 		}
 
-		let filteredPokemon = pokemon.filter(poke => poke.base_stats !== null); //skip unknown pokemon stats
+		console.log(parent.scalars, scalars);
 
-		//if this is a sub-query of Pokemon, use the parent to narrow the search
-		filteredPokemon = filteredPokemon.filter(poke => poke.name == parent.context.name);
+		//skip unknown/empty pokemon stats
+		let pokemon = database.filter(poke => poke.base_stats != null);
 
-		//handle forms
-		if (filteredPokemon.length == 0) {
-			filteredPokemon = pokemon.filter(poke => poke.base_stats !== null); //skip unknown pokemon stats
-			filteredPokemon = filteredPokemon.filter(poke => {
-				return poke.forms.some(form => form.name == parent.context.name)
+		//if this is a sub-query of Pokemon (already checked), use the parent to narrow the search
+		pokemon = pokemon.filter(poke => {
+			return scalars.every(scalar => poke[scalar.name] == parent.context[scalar.name]);
+		});
+
+		//handle forms instead of normal queries
+		if (pokemon.length == 0) {
+			pokemon = database.filter(poke => poke.base_stats != null);//skip unknown/empty pokemon stats
+
+			pokemon = pokemon.map(p => p.forms);
+			pokemon = [].concat(...pokemon);
+
+			pokemon = pokemon.filter(poke => {
+				return poke.forms.some(form => {
+					return scalars.every(scalar => form[scalar.name] == parent.context[scalar.name]);
+				});
 			});
-
-			filteredPokemon = filteredPokemon[0].forms.filter(form => form.name == parent.context.name);
 		}
 
-		//return all pokemon fields after filtering
-		const fields = scalars.map(s => s.name);
-		return filteredPokemon.map(p => {
-			//BUGFIX
-			if (!p.base_stats) {
-				return null;
-			}
+		//I am being matched (if true, ALL present scalars will have a filter field)
+		if (matching) {
+			//check every scalar to every poke - a single false match is a miss on that poke
+			pokemon = pokemon.filter(poke => {
+				return scalars.every(scalar => {
+					//handle each type of scalar
+					switch (scalar.typeName) {
+						case 'Integer':
+							return poke.base_stats[scalar.name] === parseInt(scalar.filter); //dumb comparison for now
 
-			const ret = {};
+						default:
+							throw `Unhandled scalar typeName in Stats handler: ${scalar.typeName} (${scalar.name})`;
+					}
+				});
+			});
 
-			if (fields.includes('hp')) {
-				ret.hp = p.base_stats.hp;
+			//if there are no pokemon left, then the filters missed matches
+			if (pokemon.length == 0) {
+				return [];
 			}
+		}
 
-			if (fields.includes('attack')) {
-				ret.attack = p.base_stats.attack;
-			}
+		//scalars are being matched on their own
+		if (scalars.some(s => s.filter)) {
+			//check every scalar to every poke - a single match is a hit
+			pokemon = pokemon.filter(poke => {
+				return scalars.some(scalar => {
+					//handle each type of scalar
+					switch (scalar.typeName) {
+						case 'Integer':
+							return poke.base_stats[scalar.name] === parseInt(scalar.filter); //dumb comparison for now
 
-			if (fields.includes('defense')) {
-				ret.defense = p.base_stats.defense;
-			}
+						default:
+							throw `Unhandled scalar typeName in Stats handler: ${scalar.typeName} (${scalar.name})`;
+					}
+				});
+			});
 
-			if (fields.includes('specialAttack')) {
-				ret.specialAttack = p.base_stats.specialAttack;
+			//if there are no pokemon left, then the filters missed matches
+			if (pokemon.length == 0) {
+				return [];
 			}
+		}
 
-			if (fields.includes('specialDefense')) {
-				ret.specialDefense = p.base_stats.specialDefense;
-			}
+		//process (filter out unwanted fields) and return the array of pokemon
+		return pokemon.map(poke => {
+			let ret = {};
 
-			if (fields.includes('speed')) {
-				ret.speed = p.base_stats.speed;
-			}
+			//that's a big O(damn)
+			scalars.forEach(scalar => {
+				ret[scalar.name] = poke.base_stats[scalar.name];
+			});
 
 			return ret;
 		});
-	},
-
-	create: (matches, sets) => {
-		//TODO
-	},
-
-	update: (matches, sets) => {
-		//TODO
-	},
-
-	delete: matches => {
-		//TODO
 	},
 };
 

@@ -1,8 +1,10 @@
-/* DOCS: parameter types
+/* DOCS: handler parameter types
 parent: Type | null
 scalars: [{ typeName: String, name: String, filter: any | null }, ...]
 matching: Boolean
 */
+
+//BUG: Book { author { name } } - this gives a weird result
 
 const database = require('./database.js');
 
@@ -10,8 +12,6 @@ const database = require('./database.js');
 const handler = {
 	//type queries
 	Author: (parent, scalars, matching) => {
-		console.log("Author", parent ? parent.context : null);
-
 		let authors;
 
 		//check parentage
@@ -92,8 +92,6 @@ const handler = {
 	},
 
 	Book: (parent, scalars, matching) => {
-		console.log("Book", parent ? parent.context : null);
-
 		let books;
 
 		//check parentage
