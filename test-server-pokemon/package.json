@@ -13,8 +13,8 @@
   "author": "Kayne Ruse",
   "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "pm2": "^4.4.1"
+    "cors": "latest",
+    "express": "latest",
+    "pm2": "latest"
   }
 }

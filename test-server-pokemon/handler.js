@@ -9,8 +9,6 @@ const database = require('./pokemon.json');
 //the handler routines
 const handler = {
 	Pokemon: (parent, scalars, matching) => {
-		throw 'Nothing here is working';
-
 		let pokemon = database;
 
 		//if this is a sub-query of Pokemon (a form), use the parent to narrow the search
@@ -25,6 +23,7 @@ const handler = {
 
 		//I am being matched (if true, ALL present scalars will have a filter field)
 		if (matching) {
+			console.log('matching');
 			//check every scalar to every poke - a single false match is a miss on that poke
 			pokemon = pokemon.filter(poke => {
 				return scalars.every(scalar => {
@@ -34,7 +33,7 @@ const handler = {
 						case 'Integer':
 						case 'Float':
 						case 'Boolean':
-							return poke[scalar.name].toString() == scalar.filter; //dumb comparison for now
+							return poke[scalar.name] == scalar.filter; //dumb comparison for now
 
 						default:
 							throw `Unknown scalar typeName in handler: ${scalar.typeName} (${scalar.name})`;
@@ -59,8 +58,7 @@ const handler = {
 						case 'Integer':
 						case 'Float':
 						case 'Boolean':
-							console.log(scalar, poke[scalar.name]);
-							return poke[scalar.name].toString() == scalar.filter; //dumb comparison for now
+							return poke[scalar.name] == scalar.filter; //dumb comparison for now
 
 						default:
 							throw `Unknown scalar typeName in handler: ${scalar.typeName} (${scalar.name})`;
@@ -88,21 +86,21 @@ const handler = {
 	},
 
 	Stats: (parent, scalars, matching) => {
-		throw 'Nothing here is working';
-
 		if (!parent || parent.typeName != 'Pokemon') {
 			throw 'Stats must be inside a Pokemon query';
 		}
 
-		console.log(parent.scalars, scalars);
+		console.log('mark 1');
 
 		//skip unknown/empty pokemon stats
 		let pokemon = database.filter(poke => poke.base_stats != null);
 
-		//if this is a sub-query of Pokemon (already checked), use the parent to narrow the search
+		//if this is a sub-query of a Pokemon (already checked), use the parent to narrow the search
 		pokemon = pokemon.filter(poke => {
 			return scalars.every(scalar => poke[scalar.name] == parent.context[scalar.name]);
 		});
+
+		console.log('mark 2', pokemon);
 
 		//handle forms instead of normal queries
 		if (pokemon.length == 0) {
@@ -117,6 +115,8 @@ const handler = {
 				});
 			});
 		}
+		
+		console.log('mark 3');
 
 		//I am being matched (if true, ALL present scalars will have a filter field)
 		if (matching) {
@@ -139,6 +139,8 @@ const handler = {
 				return [];
 			}
 		}
+		
+		console.log('mark 4');
 
 		//scalars are being matched on their own
 		if (scalars.some(s => s.filter)) {
@@ -161,6 +163,8 @@ const handler = {
 				return [];
 			}
 		}
+		
+		console.log('mark 5');
 
 		//process (filter out unwanted fields) and return the array of pokemon
 		return pokemon.map(poke => {

@@ -4,7 +4,7 @@ scalars: [{ typeName: String, name: String, filter: any | null }, ...]
 matching: Boolean
 */
 
-//BUG: Book { author { name } } - this gives a weird result
+//BUG: Book { authors { name } } - this gives a weird result
 
 const database = require('./database.js');
 

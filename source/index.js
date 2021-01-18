@@ -3,7 +3,7 @@ const parseInput = require('./parse-input');
 const parseQuery = require('./parse-query');
 
 //the main function to be returned (sineQL())
-const main = (schema, handler, options = {}) => {
+const sineQL = (schema, handler, options = {}) => {
 	let typeGraph;
 
 	try {
@@ -21,8 +21,8 @@ const main = (schema, handler, options = {}) => {
 			const tokens = parseInput(reqBody, true, options);
 			let pos = 0;
 
-			//check for keywords
 			switch(tokens[pos]) {
+				//check for keywords
 				case 'create':
 				case 'update':
 				case 'delete':
@@ -40,8 +40,6 @@ const main = (schema, handler, options = {}) => {
 					}
 
 					return [200, result];
-
-					break;
 			}
 		}
 		catch(e) {
@@ -52,4 +50,4 @@ const main = (schema, handler, options = {}) => {
 };
 
 //return to the caller
-module.exports = main;
+module.exports = sineQL;

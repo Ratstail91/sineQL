@@ -53,7 +53,7 @@ const parseQuery = async (handler, tokens, pos, typeGraph, parent = null, superM
 			//push the scalar object to the queryFields
 			scalarFields.push({ typeName: typeGraph[superType][tokens[pos - 1]].typeName, name: tokens[pos - 1], filter: matching ? tokens[pos++] : null });
 
-			//if I am a scalar child of a match amd I do not match
+			//if I am a scalar child of a match and I do not match
 			if (parent && superMatching && !matching) {
 				throw 'Broken match chain in scalar type ' + tokens[pos - 1];
 			}

@@ -13,7 +13,7 @@ const parseInput = (body, allowStrings, options) => {
 
 			case '"': {
 				if (!allowStrings) {
-					throw 'Can\'t lex strings';
+					throw 'Can\'t parse strings';
 				}
 
 				const start = current;
