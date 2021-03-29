@@ -44,7 +44,7 @@ const parseInput = (body, allowStrings, options) => {
 	}
 
 	if (options.debug) {
-		console.log('Input:\n', tokens, '\n');
+		console.log('Input:', tokens, '\n');
 	}
 
 	return tokens;

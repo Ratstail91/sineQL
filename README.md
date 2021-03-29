@@ -2,7 +2,9 @@
 
 sineQL is a web API query language that mimics graphQL, designed solely for fun.
 
-sineQL consists of two languages - the schema language, and the query language. sineQL assumes that the records are related in a non-looping tree-structure, defined by the schema language.
+sineQL consists of two languages - the schema language, and the query language. sineQL assumes that the records are related in a non-looping tree-structure, defined by the schema language. Also, each non-scalar type queried is returned as an array.
+
+The handler's definition is left up to the user.
 
 ## Example Server
 

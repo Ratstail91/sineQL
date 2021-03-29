@@ -22,7 +22,7 @@ const buildTypeGraph = (schema, options) => {
 		switch(tokens[pos - 1]) {
 			case 'type':
 				//delegate
-				graph[tokens[pos++]] = parseCompoundType(tokens, pos, Object.keys(graph), options);
+				graph[tokens[pos++]] = parseCompoundType(tokens, pos, Object.keys(graph), { ...options, debugName: tokens[pos - 1] });
 
 				//advance to the end of the compound type
 				pos = eatBlock(tokens, pos);
@@ -31,12 +31,16 @@ const buildTypeGraph = (schema, options) => {
 
 			case 'scalar':
 				//check against keyword list
-				if (keywords.includes(graph[tokens[pos - 1]])) {
-					//TODO: test this error
-					throw 'Unexpected keyword ' + graph[tokens[pos - 1]];
+				if (keywords.includes(tokens[pos])) {
+					throw 'Unexpected keyword ' + tokens[pos];
 				}
 
 				graph[tokens[pos++]] = { scalar: true };
+
+				if (options.debug) {
+					console.log(`Defined ${tokens[pos - 1]}:\n`, graph[tokens[pos - 1]]);
+				}
+
 				break;
 
 			default:
@@ -45,7 +49,7 @@ const buildTypeGraph = (schema, options) => {
 	}
 
 	if (options.debug) {
-		console.log('Type Graph:\n', graph, '\n');
+		console.log('\nType Graph:\n', graph, '\n');
 	}
 
 	return graph;
@@ -76,7 +80,7 @@ const parseCompoundType = (tokens, pos, scalars, options) => {
 		}
 
 		//can only use existing types (prevents looping tree structure)
-		if (!scalars.includes(type)) { //TODO: test this error
+		if (!scalars.includes(type)) {
 			throw `Unexpected value found as type field ('${type}' is undefined)`;
 		}
 
@@ -92,7 +96,7 @@ const parseCompoundType = (tokens, pos, scalars, options) => {
 	}
 
 	if (options.debug) {
-		console.log('Compound Type:\n', compound, '\n');
+		console.log(`Defined ${options.debugName}:\n`, compound);
 	}
 
 	return compound;

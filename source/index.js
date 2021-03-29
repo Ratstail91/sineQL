@@ -1,6 +1,5 @@
 const buildTypeGraph = require('./build-type-graph');
 const parseInput = require('./parse-input');
-const parseQuery = require('./parse-query');
 
 //the main function to be returned (sineQL())
 const sineQL = (schema, handler, options = {}) => {
