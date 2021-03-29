@@ -21,7 +21,8 @@ const buildTypeGraph = (schema, options) => {
 		//check for keywords
 		switch(tokens[pos - 1]) {
 			case 'type':
-				graph[tokens[pos++]] = parseCompoundType(tokens, pos, options);
+				//delegate
+				graph[tokens[pos++]] = parseCompoundType(tokens, pos, Object.keys(graph), options);
 
 				//advance to the end of the compound type
 				pos = eatBlock(tokens, pos);
@@ -29,7 +30,9 @@ const buildTypeGraph = (schema, options) => {
 				break;
 
 			case 'scalar':
+				//check against keyword list
 				if (keywords.includes(graph[tokens[pos - 1]])) {
+					//TODO: test this error
 					throw 'Unexpected keyword ' + graph[tokens[pos - 1]];
 				}
 
@@ -49,7 +52,7 @@ const buildTypeGraph = (schema, options) => {
 };
 
 //moved this routine to a separate function for clarity
-const parseCompoundType = (tokens, pos, options) => {
+const parseCompoundType = (tokens, pos, scalars, options) => {
 	//format check (not strictly necessary, but it looks nice)
 	if (tokens[pos] !== '{') {
 		throw 'Expected \'{\' in compound type definition';
@@ -69,12 +72,17 @@ const parseCompoundType = (tokens, pos, options) => {
 
 		//can't use keywords
 		if (keywords.includes(type) || keywords.includes(name)) {
-			throw 'Unexpected keyword found as type field or type name (' + type + ' ' + name + ')';
+			throw `Unexpected keyword found as type field or type name (${type} ${name})`;
+		}
+
+		//can only use existing types (prevents looping tree structure)
+		if (!scalars.includes(type)) { //TODO: test this error
+			throw `Unexpected value found as type field ('${type}' is undefined)`;
 		}
 
 		//check for duplicate fields
 		if (Object.keys(compound).includes(name)) {
-			throw 'Unexpected duplicate field name';
+			throw `Unexpected duplicate field name (${name})`;
 		}
 
 		//finally, push to the compound definition

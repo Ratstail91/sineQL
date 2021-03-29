@@ -10,12 +10,12 @@ const sineQL = (schema, handler, options = {}) => {
 		typeGraph = buildTypeGraph(schema, options);
 	}
 	catch(e) {
-		console.log('Type Graph Error:', e);
+		console.error('Type Graph Error:', e);
 		return null;
 	}
 
 	//the receiving function (sine()) - this will be called multiple times
-	return async (reqBody) => {
+	return async reqBody => {
 		try {
 			//parse the query
 			const tokens = parseInput(reqBody, true, options);
@@ -32,18 +32,12 @@ const sineQL = (schema, handler, options = {}) => {
 
 				//no leading keyword - regular query
 				default:
-					const [result, endPos] = await parseQuery(handler, tokens, pos, typeGraph);
-
-					//reject the request, despite finishing processing it
-					if (tokens[endPos]) {
-						throw 'Unexpected data found at the end of the token list (found ' + tokens[endPos] + ')';
-					}
-
-					return [200, result];
+					//TODO: implement queries
+					return [501, 'Queries not implemented'];
 			}
 		}
 		catch(e) {
-			console.log('Error:', e);
+			console.error('Error:', e);
 			return [400, e.stack || e];
 		}
 	};

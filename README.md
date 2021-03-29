@@ -1,26 +1,73 @@
-# Things That Need To Be Done
-
-* ~~Debugging options~~
-* N + 1 problem solved
-* Change "match" to "filter"
-* Full documentation
-* Graphical tool
-* GitHub CI testing
-* Implement the create command
-* Implement the update command
-* Implement the delete command
-
 # sineQL
 
 sineQL is a web API query language that mimics graphQL, designed solely for fun.
 
-sineQL consists of two languages - the schema language, and the query language.
+sineQL consists of two languages - the schema language, and the query language. sineQL assumes that the records are related in a non-looping tree-structure, defined by the schema language.
 
-You can try the API right now!
+## Example Server
+
+A simple express server using sineQL.
 
 ```js
-//create the wave function, wrapping a fetch to a server
-const wave = body => fetch('https://krgamestudios.com/pokemon', {
+//express for testing
+const express = require('express');
+const app = express();
+
+app.use(express.text());
+
+//test the library
+const sineQL = require('sineql');
+const schema = require('./schema.js');
+const handler = require('./handler.js');
+
+const sine = sineQL(schema, handler, { debug: true });
+
+//open the endpoint
+app.post('/sineql', async (req, res) => {
+	const [code, result] = await sine(req.body);
+	res.status(code).send(result);
+});
+
+//startup
+const port = process.env.WEB_PORT || 4000;
+app.listen(port, err => {
+	console.log(`listening to *:${port}`);
+});
+```
+
+```js
+const schema = `
+scalar Date
+
+type Book {
+	String title
+	Date published
+}
+
+type Author {
+	String name
+	Book books
+}
+`;
+
+module.exports = schema;
+```
+
+```js
+//TODO: define the handler object's API properly
+const handler = {
+	Book: () => null,
+	Author: () => null
+};
+
+module.exports = handler;
+```
+
+Create a matching client-side function pointing to the server.
+
+```js
+//create the wave function, wrapping a fetch to the server
+const wave = body => fetch('http://example.com/sineql', {
     method: 'POST',
     headers: {
        'Content-Type': 'text/plain'
@@ -28,11 +75,11 @@ const wave = body => fetch('https://krgamestudios.com/pokemon', {
     body: body
 });
 
-//get a list of pokemon names
-wave('Pokemon { name }')
+//get a list of content
+wave('Author { name books { title } }')
     .then(blob => blob.text())
     .then(text => console.log(text))
-    .catch(err => console.log(err))
+    .catch(e => console.error(e))
 ;
 ```
 
@@ -59,7 +106,6 @@ scalar Date
 
 type Book {
 	String title
-	Author author
 	Date published
 }
 
@@ -71,16 +117,14 @@ type Author {
 
 ## The Query Language
 
-The query langauge can be used to request data from a server, either in whole or in part by listing it's type and it's fields, and subfields.
+The query langauge can be used to request data from a server, either in whole or in part by listing its type and its needed fields:
 
 ```
-Book {
-	title
-	author {
-		name
-		books {
-			title
-		}
+Author {
+	name
+	books {
+		title
+		published
 	}
 }
 ```
@@ -93,44 +137,20 @@ The fields can be altered as well, using the query language's built-in keywords:
 * match
 * set
 
-`create`, `update` and `delete` do as you would expect them to.
+`create`, `update` and `delete` work as expected.
 
-When using `create`, `match` will find an existing record for a compound type and use that as it's value (multiple matches is an error):
+### Create
+
+When using `create`, `match` will find an existing record and associate that with the created values (multiple matches is an error):
 
 ```
-create Book {
-    set title "The Wind in the Willows"
-    match author {
-        name "Kenneth Grahame"
-    }
+Author {
+	match name "Kenneth Grahame"
+	create books {
+		create title "The Wind in the Willows"
+	}
 }
 ```
-
-When using `update`, `match` will find all existing records and update those using the `set` keyword:
-
-```
-update Book {
-    match title "The Wind in the Willows"
-    set published "15 June 1908"
-}
-```
-
-```
-update Book {
-    match title "The Wind in the Willows"
-    set title "The Fart in the Fronds"
-}
-```
-
-When using `delete`, only `match` is valid, and will delete all matching records:
-
-```
-delete Book {
-    match title "The Fart in the Fronds"
-}
-```
-
-You can use as many instances of `match` and `set` as you like, as long as the result is valid.
 
 You can create multiple records at once by surrounding them with `[]`:
 
@@ -159,3 +179,34 @@ create Book [
 	}
 ]
 ```
+
+### Update
+
+When using `update`, `match` will find all existing records and update those using the `set` keyword:
+
+```
+update Book {
+	match title "The Wind in the Willows"
+	set published "15 June 1908"
+}
+```
+
+```
+update Book {
+	match title "The Wind in the Willows"
+	set title "The Fart in the Fronds"
+}
+```
+
+### Delete
+
+When using `delete`, only `match` is valid, and will delete all matching records:
+
+```
+delete Book {
+	match title "The Fart in the Fronds"
+}
+```
+
+You can use as many instances of `match` and `set` as you like, as long as the result is valid.
+
