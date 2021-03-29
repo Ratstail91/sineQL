@@ -138,8 +138,9 @@ The fields can be altered as well, using the query language's built-in keywords:
 * delete
 * match
 * set
+* typeName
 
-`create`, `update` and `delete` work as expected.
+`create`, `update` and `delete` are still to be defined properly, but they'll probably work like this:
 
 ### Create
 

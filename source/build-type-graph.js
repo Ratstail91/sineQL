@@ -7,10 +7,10 @@ const parseInput = require('./parse-input');
 const buildTypeGraph = (schema, options) => {
 	//the default graph
 	let graph = {
-		String: { scalar: true },
-		Integer: { scalar: true },
-		Float: { scalar: true },
-		Boolean: { scalar: true },
+		String: { typeName: 'String', scalar: true },
+		Integer: { typeName: 'Integer', scalar: true },
+		Float: { typeName: 'Float', scalar: true },
+		Boolean: { typeName: 'Boolean', scalar: true },
 	};
 
 	//parse the schema
@@ -35,7 +35,7 @@ const buildTypeGraph = (schema, options) => {
 					throw 'Unexpected keyword ' + tokens[pos];
 				}
 
-				graph[tokens[pos++]] = { scalar: true };
+				graph[tokens[pos++]] = { typeName: tokens[pos - 1], scalar: true };
 
 				if (options.debug) {
 					console.log(`Defined ${tokens[pos - 1]}:\n`, graph[tokens[pos - 1]]);
@@ -63,7 +63,7 @@ const parseCompoundType = (tokens, pos, scalars, options) => {
 	}
 
 	//graph component to be returned
-	const compound = {};
+	const compound = { typeName: tokens[pos - 1] };
 
 	//for each line of the compound type
 	while (tokens[pos++] && tokens[pos] !== '}') {
