@@ -1,8 +1,9 @@
 const buildTypeGraph = require('./build-type-graph');
 const parseInput = require('./parse-input');
+const parseQueryTree = require('./parse-query-tree');
 
 //the main function to be returned (sineQL())
-const sineQL = (schema, handler, options = {}) => {
+const sineQL = (schema, { queryHandlers }, options = {}) => {
 	let typeGraph;
 
 	try {
@@ -18,21 +19,27 @@ const sineQL = (schema, handler, options = {}) => {
 		try {
 			//parse the query
 			const tokens = parseInput(reqBody, true, options);
-			let pos = 0;
+			const queryTree = parseQueryTree(tokens, typeGraph, options);
 
-			switch(tokens[pos]) {
-				//check for keywords
+			switch(tokens[0]) {
+				//check for leading keywords
 				case 'create':
 				case 'update':
 				case 'delete':
-					return [501, 'Keyword not implemented: ' + tokens[pos]];
+					return [501, 'Keyword not implemented: ' + tokens[0]];
 					//TODO: implement these keywords
 					break;
 
 				//no leading keyword - regular query
-				default:
-					//TODO: implement queries
-					return [501, 'Queries not implemented'];
+				default: {
+					const result = await queryHandlers[queryTree.typeName](queryTree, typeGraph);
+
+					if (options.debug) {
+						console.log('Query tree results:\n', result);
+					}
+
+					return [200, result];
+				}
 			}
 		}
 		catch(e) {
