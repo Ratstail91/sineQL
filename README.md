@@ -12,6 +12,7 @@ The handler's definition is left up to the user.
 * Easy to use query language
 * Simple to set-up a server
 * Each top-level keyword (and queries) is optional
+* No package dependencies
 
 ## Example Server
 
