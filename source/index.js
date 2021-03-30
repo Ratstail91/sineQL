@@ -31,7 +31,16 @@ const sineQL = (schema, { queryHandlers }, options = {}) => {
 
 				//no leading keyword - regular query
 				default: {
+					if (!queryHandlers) {
+						return [501, 'Query handlers not implemented'];
+					}
+
 					const queryTree = parseQueryTree(tokens, typeGraph, options);
+
+					if (!queryHandlers[queryTree.typeName]) {
+						throw `Query handler not implemented for that type: ${queryTree.typeName}`;
+					}
+
 					const result = await queryHandlers[queryTree.typeName](queryTree, typeGraph);
 
 					if (options.debug) {

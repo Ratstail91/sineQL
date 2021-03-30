@@ -6,6 +6,13 @@ sineQL consists of two languages - the schema language, and the query language. 
 
 The handler's definition is left up to the user.
 
+## Feature List
+
+* Easy to use schema language
+* Easy to use query language
+* Simple to set-up a server
+* Each top-level keyword (and queries) is optional
+
 ## Example Server
 
 A simple express server using sineQL.
@@ -15,6 +22,7 @@ A simple express server using sineQL.
 const express = require('express');
 const app = express();
 
+//uses text input
 app.use(express.text());
 
 //test the library
@@ -22,6 +30,7 @@ const sineQL = require('sineql');
 const schema = require('./schema.js');
 const queryHandler = require('./query-handler.js');
 
+//omit 'queryHandler', 'createHandler', 'updateHandler' or 'deleteHandler' to disable those methods
 const sine = sineQL(schema, { queryHandler }, { debug: true });
 
 //open the endpoint
