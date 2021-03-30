@@ -7,6 +7,11 @@ const parseQueryTree = (tokens, typeGraph, options) => {
 		throw `Expected a type in the type graph (found ${tokens[current - 1]})`;
 	}
 
+	//check that there are the correct number of '{' and '}'
+	if (tokens.reduce((running, tok) => tok == '{' ? running + 1 : tok == '}' ? running - 1 : running, 0) != 0) {
+		throw `Unequal number of '{' and '}' found`;
+	}
+
 	//read the block of lines
 	const [block, pos] = readBlock(tokens, current, tokens[current - 1], typeGraph, options);
 
@@ -27,12 +32,7 @@ const readBlock = (tokens, current, superType, typeGraph, options) => {
 	const result = {};
 
 	//scan each "line" in this block
-	while(tokens[current++]) {
-		//check for end of block
-		if (tokens[current - 1] == '}') {
-			break;
-		}
-
+	while(tokens[current++] && tokens[current - 1] != '}') {
 		//check for block-level keywords (modifiers need to form a chain from the leaf)
 		let modifier = null;
 		if (['match'].includes(tokens[current - 1])) {

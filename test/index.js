@@ -6,8 +6,8 @@ const Op = {
 const books = {
 	findAll: async args => {
 		let arr = [
-			{ id: 1, title: 'The Wind in the Willows', published: '1908-06-15' },
-			{ id: 2, title: 'The Fart in the Fronds', published: '1908-06-15' }
+			{ id: 1, title: 'The Wind in the Willows', published: '1908-06-15', score: 0.9 },
+			{ id: 2, title: 'The Fart in the Fronds', published: null, score: 0.45 }
 		];
 
 		const { attributes, where } = args;
@@ -18,19 +18,9 @@ const books = {
 				return true;
 			}
 
-			if (where.title && where.published) {
-				return element.title == where.title.eq && element.published == where.published.eq;
-			}
-
-			if (where.title) {
-				return element.title == where.title.eq;
-			}
-
-			if (where.published) {
-				return element.published == where.published.eq;
-			}
-
-			return false;
+			return Object.keys(where).reduce((result, key) => {
+				return result && (element[key] || 'null').toString() == where[key].eq.toString();
+			}, true);
 		});
 
 		//filter out non-used attributes
@@ -52,9 +42,9 @@ const books = {
 const authors = {
 	findAll: async args => {
 		let arr = [
-			{ id: 1, name: 'Kenneth Grahame', books: [1] },
-			{ id: 2,  name: 'Frank', books: [1, 2] },
-			{ id: 3,  name: 'Betty', books: [2] }
+			{ id: 1, name: 'Kenneth Grahame', books: [1], alive: false },
+			{ id: 2,  name: 'Frank', books: [1, 2], alive: true },
+			{ id: 3,  name: 'Betty', books: [2], alive: true }
 		];
 
 		const { attributes, where } = args;
@@ -65,19 +55,9 @@ const authors = {
 				return true;
 			}
 
-			if (where.name && where.books) {
-				return element.name == where.name.eq; //books is always true because they are never queried
-			}
-
-			if (where.name) {
-				return element.name == where.name.eq;
-			}
-
-			if (where.books) {
-				return true; //books is always true because they are never queried
-			}
-
-			return false;
+			return Object.keys(where).reduce((result, key) => {
+				return result && (element[key] || 'null').toString() == where[key].eq.toString();
+			}, true);
 		});
 
 		//filter out non-used attributes
@@ -215,11 +195,13 @@ scalar Date
 type Book {
 	String title
 	Date published
+	Float score
 }
 
 type Author {
 	String name
 	Book books
+	Boolean alive
 }
 `;
 
