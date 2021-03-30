@@ -2,8 +2,6 @@
 const parseQueryTree = (tokens, typeGraph, options) => {
 	let current = 1; //primed
 
-	//TODO: check for top-level keywords
-
 	//get a token that matches a type
 	if (!typeGraph[tokens[current - 1]]) {
 		throw `Expected a type in the type graph (found ${tokens[current - 1]})`;

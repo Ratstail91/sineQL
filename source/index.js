@@ -19,7 +19,6 @@ const sineQL = (schema, { queryHandlers }, options = {}) => {
 		try {
 			//parse the query
 			const tokens = parseInput(reqBody, true, options);
-			const queryTree = parseQueryTree(tokens, typeGraph, options);
 
 			switch(tokens[0]) {
 				//check for leading keywords
@@ -32,6 +31,7 @@ const sineQL = (schema, { queryHandlers }, options = {}) => {
 
 				//no leading keyword - regular query
 				default: {
+					const queryTree = parseQueryTree(tokens, typeGraph, options);
 					const result = await queryHandlers[queryTree.typeName](queryTree, typeGraph);
 
 					if (options.debug) {
