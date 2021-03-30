@@ -6,8 +6,26 @@ const Op = {
 const books = {
 	findAll: async args => {
 		let arr = [
-			{ id: 1, title: 'The Wind in the Willows', published: '1908-06-15', score: 0.9 },
-			{ id: 2, title: 'The Fart in the Fronds', published: null, score: 0.45 }
+			{ id: 1, title: 'Outlander', published: '1991' },
+			{ id: 2, title: 'Dragonfly in Amber', published: '1992' },
+			{ id: 3, title: 'Voyager', published: '1993' },
+			{ id: 4, title: 'Drums of Autumn', published: '1996' },
+			{ id: 5, title: 'The Fiery Cross', published: '2000' }, //Incorrect, the correct publish date is 2001
+			{ id: 6, title: 'The Breath of Snow and Ashes', published: '2005' },
+			{ id: 7, title: 'An Echo in the Bone', published: '2009' },
+			{ id: 8, title: 'Written in my Own Heart\'s Blood', published: '2014' },
+			{ id: 9, title: 'Go Tell the Bees That I Am Gone', published: null },
+
+			{ id: 10, title: 'The Forest of Silence', published: '2000' },
+			{ id: 11, title: 'The Lake of Tears', published: '2000' },
+			{ id: 12, title: 'The City of Rats', published: '2000' },
+			{ id: 13, title: 'The Shifting Sands', published: '2000' },
+			{ id: 14, title: 'Dread Mountain', published: '2000' },
+			{ id: 15, title: 'The Maze of the Beast', published: '2000' },
+			{ id: 16, title: 'The Valley of the Lost', published: '2000' },
+			{ id: 17, title: 'Return to Del', published: '2000' },
+
+			{ id: 18, title: 'The Wind in the Willows', published: '1908' },
 		];
 
 		const { attributes, where } = args;
@@ -42,9 +60,9 @@ const books = {
 const authors = {
 	findAll: async args => {
 		let arr = [
-			{ id: 1, name: 'Kenneth Grahame', books: [1], alive: false },
-			{ id: 2,  name: 'Frank', books: [1, 2], alive: true },
-			{ id: 3,  name: 'Betty', books: [2], alive: true }
+			{ id: 1, name: 'Diana Gabaldon', books: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+			{ id: 2, name: 'Emily Rodda', books: [10, 11, 12, 13, 14, 15, 16, 17] },
+			{ id: 3, name: 'Kenneth Grahame', books: [18] }
 		];
 
 		const { attributes, where } = args;
@@ -164,7 +182,7 @@ const queryHandlers = {
 		const { typeName, ...fields } = query;
 
 		//hack the id into the fields list (if it's not there already)
-		fields['id'] = fields['id'] || { typeName: 'Integer', scalar: true };
+		fields['id'] = fields['id'] || { typeName: 'Integer', scalar: true }; //TODO: should this be automatic?
 
 		//get the names of matched fields
 		const matchedNames = Object.keys(fields).filter(field => fields[field].match);
@@ -195,13 +213,11 @@ scalar Date
 type Book {
 	String title
 	Date published
-	Float score
 }
 
 type Author {
 	String name
 	Book books
-	Boolean alive
 }
 `;
 

@@ -31,7 +31,7 @@ const sineQL = require('sineql');
 const schema = require('./schema.js');
 const queryHandler = require('./query-handler.js');
 
-//omit 'queryHandler', 'createHandler', 'updateHandler' or 'deleteHandler' to disable those methods
+//omit 'createHandler', 'updateHandler' or 'deleteHandler' to disable those methods
 const sine = sineQL(schema, { queryHandler }, { debug: true });
 
 //open the endpoint
@@ -54,10 +54,12 @@ scalar Date
 type Book {
 	String title
 	Date published
+	Float score
 }
 
 type Author {
 	String name
+	Boolean alive
 	Book books
 }
 `;
@@ -204,7 +206,7 @@ When using `update`, `match` will find all existing records and update those usi
 ```
 update Book {
 	match title "The Wind in the Willows"
-	set published "15 June 1908"
+	set published 1908
 }
 ```
 
