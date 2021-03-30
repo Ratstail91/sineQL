@@ -256,6 +256,10 @@ const sine = sineQL(schema, { queryHandlers }, { debug: false });
 	while(true) {
 		const answer = await question('sineQL');
 		const [code, result] = await sine(answer);
-		console.dir(result, { depth: null });
+
+		//normal response
+		if (code == 200) {
+			console.dir(result, { depth: null });
+		}
 	}
 })();
