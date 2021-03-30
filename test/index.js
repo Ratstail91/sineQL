@@ -52,9 +52,9 @@ const books = {
 const authors = {
 	findAll: async args => {
 		let arr = [
-			{ name: 'Kenneth Grahame', books: [1] },
-			{ name: 'Frank', books: [1, 2] },
-			{ name: 'Betty', books: [2] }
+			{ id: 1, name: 'Kenneth Grahame', books: [1] },
+			{ id: 2,  name: 'Frank', books: [1, 2] },
+			{ id: 3,  name: 'Betty', books: [2] }
 		];
 
 		const { attributes, where } = args;
@@ -129,6 +129,9 @@ const queryHandlers = {
 		//get the fields alone
 		const { typeName, ...fields } = query;
 
+		//hack the id into the fields list (if it's not there already)
+		fields['id'] = fields['id'] || { typeName: 'Integer', scalar: true };
+
 		//get the names of matched fields (fields to find)
 		const matchedNames = Object.keys(fields).filter(field => fields[field].match);
 
@@ -158,7 +161,7 @@ const queryHandlers = {
 
 			//for each author, update this non-scalar field with the non-scalar's recursed value
 			authorResults.forEach(author => {
-				author[nonScalar] = nonScalarArray.filter(ns => author[nonScalar].includes(ns.id)); //using the hacked-in ID field
+				author[nonScalar] = nonScalarArray.filter(ns => author[nonScalar].includes(ns.id)); //using the hacked-in ID field (JOIN)
 			});
 
 			//prune the authors when matching, but their results are empty
@@ -180,8 +183,8 @@ const queryHandlers = {
 		//get the fields alone
 		const { typeName, ...fields } = query;
 
-		//hack the book id into the fields list (if it's not there already)
-		fields.id = fields.id || { typeName: 'Integer', scalar: true };
+		//hack the id into the fields list (if it's not there already)
+		fields['id'] = fields['id'] || { typeName: 'Integer', scalar: true };
 
 		//get the names of matched fields
 		const matchedNames = Object.keys(fields).filter(field => fields[field].match);
@@ -220,14 +223,39 @@ type Author {
 }
 `;
 
+//input tool
+const readline = require('readline');
+
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout,
+	terminal: false
+});
+
+const question = (prompt, def = null) => {
+	return new Promise((resolve, reject) => {
+		rl.question(`${prompt}${def ? ` (${def})` : ''}> `, answer => {
+			//loop on required
+			if (def === null && !answer) {
+				return resolve(question(prompt, def));
+			}
+
+			return resolve(answer || def);
+		});
+	});
+};
+
 //the library to test
 const sineQL = require('../source/index.js');
 
 //run the function in debug mode (builds type graph)
 const sine = sineQL(schema, { queryHandlers }, { debug: false });
 
+//actually ask the question
 (async () => {
-	const [code, result] = await sine('Author { match name "Frank" books { title published } }');
-
-	console.dir(result, { depth: null });
+	while(true) {
+		const answer = await question('sineQL');
+		const [code, result] = await sine(answer);
+		console.dir(result, { depth: null });
+	}
 })();

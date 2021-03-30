@@ -20,9 +20,9 @@ app.use(express.text());
 //test the library
 const sineQL = require('sineql');
 const schema = require('./schema.js');
-const handler = require('./handler.js');
+const queryHandler = require('./query-handler.js');
 
-const sine = sineQL(schema, handler, { debug: true });
+const sine = sineQL(schema, { queryHandler }, { debug: true });
 
 //open the endpoint
 app.post('/sineql', async (req, res) => {
@@ -56,13 +56,17 @@ module.exports = schema;
 ```
 
 ```js
-//TODO: define the handler object's API properly
-const handler = {
-	Book: () => null,
-	Author: () => null
+//there's a different handler object for query, create, update and delete
+const queryHandler = {
+	Author: (query, graph) => {
+		//TODO: implement this
+	},
+	Book: (query, graph) => {
+		//TODO: implement this
+	},
 };
 
-module.exports = handler;
+module.exports = queryHandler;
 ```
 
 Create a matching client-side function pointing to the server.
@@ -140,7 +144,7 @@ The fields can be altered as well, using the query language's built-in keywords:
 * set
 * typeName
 
-`create`, `update` and `delete` are still to be defined properly, but they'll probably work like this:
+`create`, `update` and `delete` are still to be defined properly, but they'll probably work as follows.
 
 ### Create
 
