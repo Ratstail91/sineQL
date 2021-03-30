@@ -35,7 +35,8 @@ const sineQL = (schema, { queryHandlers }, options = {}) => {
 					const result = await queryHandlers[queryTree.typeName](queryTree, typeGraph);
 
 					if (options.debug) {
-						console.log('Query tree results:\n', result);
+						console.log('Query tree results:');
+						console.dir(result, { depth: null });
 					}
 
 					return [200, result];

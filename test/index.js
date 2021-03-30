@@ -12,9 +12,38 @@ const books = {
 
 		const { attributes, where } = args;
 
-		//TODO: make this more generic
-		console.log('books attributes:', attributes);
-		console.log('books where', where);
+		//filter out non-matching elements
+		arr = arr.filter(element => {
+			if (Object.keys(where).length == 0) {
+				return true;
+			}
+
+			if (where.title && where.published) {
+				return element.title == where.title.eq && element.published == where.published.eq;
+			}
+
+			if (where.title) {
+				return element.title == where.title.eq;
+			}
+
+			if (where.published) {
+				return element.published == where.published.eq;
+			}
+
+			return false;
+		});
+
+		//filter out non-used attributes
+		arr = arr.map(element => {
+			//only they element keys that are in attributes
+			const keys = Object.keys(element).filter(key => attributes.includes(key));
+
+			//determine which fields to carry over
+			const ret = {};
+			keys.forEach(key => ret[key] = element[key]);
+
+			return ret;
+		});
 
 		return arr;
 	}
@@ -30,8 +59,38 @@ const authors = {
 
 		const { attributes, where } = args;
 
-		console.log('authors attributes:', attributes);
-		console.log('authors where', where);
+		//filter out non-matching elements
+		arr = arr.filter(element => {
+			if (Object.keys(where).length == 0) {
+				return true;
+			}
+
+			if (where.name && where.books) {
+				return element.name == where.name.eq; //books is always true because they are never queried
+			}
+
+			if (where.name) {
+				return element.name == where.name.eq;
+			}
+
+			if (where.books) {
+				return true; //books is always true because they are never queried
+			}
+
+			return false;
+		});
+
+		//filter out non-used attributes
+		arr = arr.map(element => {
+			//only they element keys that are in attributes
+			const keys = Object.keys(element).filter(key => attributes.includes(key));
+
+			//determine which fields to carry over
+			const ret = {};
+			keys.forEach(key => ret[key] = element[key]);
+
+			return ret;
+		});
 
 		return arr;
 	}
@@ -70,7 +129,7 @@ const queryHandlers = {
 		//get the fields alone
 		const { typeName, ...fields } = query;
 
-		//get the names of matched fields
+		//get the names of matched fields (fields to find)
 		const matchedNames = Object.keys(fields).filter(field => fields[field].match);
 
 		//short-circuit if querying everything
@@ -78,7 +137,7 @@ const queryHandlers = {
 		if (matchedNames.length > 0) {
 			//build the "where" object
 			matchedNames.forEach(mn => {
-				if (query[mn].match !== true) {
+				if (query[mn].match !== true) { //true means it's a compound type
 					where[mn] = { [Op.eq]: query[mn].match };
 				}
 			});
@@ -88,8 +147,8 @@ const queryHandlers = {
 		const scalars = Object.keys(fields).filter(field => graph[fields[field].typeName].scalar);
 		const nonScalars = Object.keys(fields).filter(field => !graph[fields[field].typeName].scalar);
 
-		const authorResults = await authors.findAll({
-			attributes: scalars, //fields to find (keys)
+		let authorResults = await authors.findAll({
+			attributes: Object.keys(fields), //fields to find (keys)
 			where: where
 		}); //sequelize ORM model
 
@@ -99,7 +158,12 @@ const queryHandlers = {
 
 			//for each author, update this non-scalar field with the non-scalar's recursed value
 			authorResults.forEach(author => {
-				author[nonScalar] = nonScalarArray.filter(ns => author[nonScalar].includes(ns.id));
+				author[nonScalar] = nonScalarArray.filter(ns => author[nonScalar].includes(ns.id)); //using the hacked-in ID field
+			});
+
+			//prune the authors when matching, but their results are empty
+			authorResults = authorResults.filter(author => {
+				return !(fields[nonScalar].match && author[nonScalar].length == 0);
 			});
 		});
 
@@ -115,6 +179,9 @@ const queryHandlers = {
 
 		//get the fields alone
 		const { typeName, ...fields } = query;
+
+		//hack the book id into the fields list (if it's not there already)
+		fields.id = fields.id || { typeName: 'Integer', scalar: true };
 
 		//get the names of matched fields
 		const matchedNames = Object.keys(fields).filter(field => fields[field].match);
@@ -157,10 +224,10 @@ type Author {
 const sineQL = require('../source/index.js');
 
 //run the function in debug mode (builds type graph)
-const sine = sineQL(schema, { queryHandlers }, { debug: true });
+const sine = sineQL(schema, { queryHandlers }, { debug: false });
 
 (async () => {
-	const [code, result] = await sine('Author { name match books { match title "The Wind in the Willows" published } }');
+	const [code, result] = await sine('Author { match name "Frank" books { title published } }');
 
-	console.log('\n\n', JSON.stringify(result));
+	console.dir(result, { depth: null });
 })();

@@ -35,7 +35,7 @@ const readBlock = (tokens, current, superType, typeGraph, options) => {
 			break;
 		}
 
-		//check for block-level keywords
+		//check for block-level keywords (modifiers need to form a chain from the leaf)
 		let modifier = null;
 		if (['match'].includes(tokens[current - 1])) {
 			modifier = tokens[current - 1];
@@ -68,7 +68,8 @@ const readBlock = (tokens, current, superType, typeGraph, options) => {
 			current = pos; //pos points past the end of the block
 
 			if (options.debug) {
-				console.log(`${fieldName}: ${JSON.stringify(result[fieldName])}`);
+				console.log(`${fieldName}:`);
+				console.dir(result[fieldName], { depth: null });
 			}
 
 			continue;
