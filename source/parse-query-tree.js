@@ -47,6 +47,11 @@ const readBlock = (tokens, current, superType, typeGraph, options) => {
 			console.log(`Trying to process field ${fieldName}`);
 		}
 
+		//if the field is not present in the type
+		if (!typeGraph[superType][fieldName]) {
+			throw `Unexpected field name ${fieldName} in type ${superType}`;
+		}
+
 		//if the field is non-scalar, read the sub-block
 		if (!typeGraph[typeGraph[superType][fieldName].typeName].scalar) {
 			//recurse

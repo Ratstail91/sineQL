@@ -6,26 +6,26 @@ const Op = {
 const books = {
 	findAll: async args => {
 		let arr = [
-			{ id: 1, title: 'Outlander', published: '1991' },
-			{ id: 2, title: 'Dragonfly in Amber', published: '1992' },
-			{ id: 3, title: 'Voyager', published: '1993' },
-			{ id: 4, title: 'Drums of Autumn', published: '1996' },
-			{ id: 5, title: 'The Fiery Cross', published: '2000' }, //Incorrect, the correct publish date is 2001
-			{ id: 6, title: 'The Breath of Snow and Ashes', published: '2005' },
-			{ id: 7, title: 'An Echo in the Bone', published: '2009' },
-			{ id: 8, title: 'Written in my Own Heart\'s Blood', published: '2014' },
-			{ id: 9, title: 'Go Tell the Bees That I Am Gone', published: null },
+			{ id: 1, title: 'Outlander', published: '1991', rating: 9.5 },
+			{ id: 2, title: 'Dragonfly in Amber', published: '1992', rating: 9.5 },
+			{ id: 3, title: 'Voyager', published: '1993', rating: 9.5 },
+			{ id: 4, title: 'Drums of Autumn', published: '1996', rating: 9.5 },
+			{ id: 5, title: 'The Fiery Cross', published: '2000', rating: 9.5 }, //Incorrect, the correct publish date is 2001
+			{ id: 6, title: 'The Breath of Snow and Ashes', published: '2005', rating: 9.5 },
+			{ id: 7, title: 'An Echo in the Bone', published: '2009', rating: 9.5 },
+			{ id: 8, title: 'Written in my Own Heart\'s Blood', published: '2014', rating: 9.5 },
+			{ id: 9, title: 'Go Tell the Bees That I Am Gone', published: null, rating: 9.5 },
 
-			{ id: 10, title: 'The Forest of Silence', published: '2000' },
-			{ id: 11, title: 'The Lake of Tears', published: '2000' },
-			{ id: 12, title: 'The City of Rats', published: '2000' },
-			{ id: 13, title: 'The Shifting Sands', published: '2000' },
-			{ id: 14, title: 'Dread Mountain', published: '2000' },
-			{ id: 15, title: 'The Maze of the Beast', published: '2000' },
-			{ id: 16, title: 'The Valley of the Lost', published: '2000' },
-			{ id: 17, title: 'Return to Del', published: '2000' },
+			{ id: 10, title: 'The Forest of Silence', published: '2000', rating: 9.5 },
+			{ id: 11, title: 'The Lake of Tears', published: '2000', rating: 9.5 },
+			{ id: 12, title: 'The City of Rats', published: '2000', rating: 9.5 },
+			{ id: 13, title: 'The Shifting Sands', published: '2000', rating: 9.5 },
+			{ id: 14, title: 'Dread Mountain', published: '2000', rating: 9.5 },
+			{ id: 15, title: 'The Maze of the Beast', published: '2000', rating: 9.5 },
+			{ id: 16, title: 'The Valley of the Lost', published: '2000', rating: 9.5 },
+			{ id: 17, title: 'Return to Del', published: '2000', rating: 9.5 },
 
-			{ id: 18, title: 'The Wind in the Willows', published: '1908' },
+			{ id: 18, title: 'The Wind in the Willows', published: '1908', rating: 9.5 },
 		];
 
 		const { attributes, where } = args;
@@ -213,6 +213,7 @@ scalar Date
 type Book {
 	String title
 	Date published
+	Float rating
 }
 
 type Author {
