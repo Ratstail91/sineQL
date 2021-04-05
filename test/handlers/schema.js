@@ -3,13 +3,13 @@ module.exports = `
 scalar Date
 
 type Book {
-	String title
+	unique String title
 	Date published
 	Float rating
 }
 
 type Author {
-	String name
+	unique String name
 	Book books
 }
 `;

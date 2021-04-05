@@ -11,6 +11,7 @@ module.exports = sequelize.define('authors', {
 	},
 
 	name: {
-		type: Sequelize.TEXT
+		type: Sequelize.STRING,
+		unique: true
 	}
 });

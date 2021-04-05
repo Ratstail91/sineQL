@@ -103,12 +103,13 @@ wave('Author { name books { title } }')
 
 ## The Schema Language
 
-The schema language is a layout of how queries should be made, as well as what can be made with them. There are two built-in keywords for the schema language:
+The schema language is a layout of how queries should be made, as well as what can be made with them. There are several built-in keywords for the schema language:
 
 * type
 * scalar
+* unique
 
-`type` is used for defining new compound types. `scalar` is for defining new scalar types, such as `Date`.
+`type` is used for defining new compound types. `scalar` is for defining new scalar types, such as `Date`. `unique` is a modifier on a field, indicating that it is unique in the database.
 
 The built-in types for the schema language are:
 
@@ -123,12 +124,12 @@ These can be combined into compound types as so:
 scalar Date
 
 type Book {
-	String title
+	unique String title
 	Date published
 }
 
 type Author {
-	String name
+	unique String name
 	Book books
 }
 ```

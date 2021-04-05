@@ -38,7 +38,8 @@ const buildTypeGraph = (schema, options) => {
 				graph[tokens[pos++]] = { typeName: tokens[pos - 1], scalar: true };
 
 				if (options.debug) {
-					console.log(`Defined ${tokens[pos - 1]}:\n`, graph[tokens[pos - 1]]);
+					console.log(`Defined ${tokens[pos - 1]}:`);
+					console.log(graph[tokens[pos - 1]], '\n');
 				}
 
 				break;
@@ -49,7 +50,8 @@ const buildTypeGraph = (schema, options) => {
 	}
 
 	if (options.debug) {
-		console.log('\nType Graph:\n', graph, '\n');
+		console.log('\nType Graph:');
+		console.log(graph, '\n');
 	}
 
 	return graph;
@@ -62,11 +64,24 @@ const parseCompoundType = (tokens, pos, scalars, options) => {
 		throw 'Expected \'{\' in compound type definition';
 	}
 
+	//schema modifiers
+	let modifiers = {};
+
 	//graph component to be returned
 	const compound = { typeName: tokens[pos - 1] };
 
 	//for each line of the compound type
 	while (tokens[pos++] && tokens[pos] !== '}') {
+		//check for modifiers
+		while(['unique'].includes(tokens[pos])) {
+			if (Object.keys(modifiers).includes(tokens[pos])) {
+				throw `Unexpected duplicate modifier in schema (${tokens[pos]})`;
+			}
+
+			modifiers[tokens[pos++]] = true;
+		}
+
+		//scan the type & name
 		let type = tokens[pos++];
 		const name = tokens[pos];
 
@@ -91,12 +106,16 @@ const parseCompoundType = (tokens, pos, scalars, options) => {
 
 		//finally, push to the compound definition
 		compound[name] = {
-			typeName: type
+			typeName: type,
+			...modifiers
 		};
+
+		modifiers = {}; //reset
 	}
 
 	if (options.debug) {
-		console.log(`Defined ${options.debugName}:\n`, compound);
+		console.log(`Defined ${options.debugName}:`);
+		console.log(compound, '\n');
 	}
 
 	return compound;

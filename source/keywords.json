@@ -1,1 +1,1 @@
-["type", "scalar", "create", "update", "delete", "set", "match", "typeName"]
+["type", "scalar", "create", "update", "delete", "set", "match", "unique", "typeName"]

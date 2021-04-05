@@ -11,11 +11,12 @@ module.exports = sequelize.define('books', {
 	},
 
 	title: {
-		type: Sequelize.TEXT
+		type: Sequelize.STRING,
+		unique: true
 	},
 
 	published: {
-		type: Sequelize.TEXT
+		type: Sequelize.STRING
 	},
 
 	rating: {
