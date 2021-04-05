@@ -70,6 +70,13 @@ const queryHandlers = {
 			//for each author, update this non-scalar field with the non-scalar's recursed value
 			authorResults = authorResults.map(author => {
 				author[nonScalar] = nonScalarArray.filter(ns => ns['authorId'] == author.id);
+
+				//BUGFIX: filter out extra authorId
+				author[nonScalar] = author[nonScalar].map(ns => {
+					const { authorId, ...res } = ns;
+					return res;
+				}); //extract authorId
+
 				return author;
 			});
 
