@@ -1,9 +1,10 @@
 const buildTypeGraph = require('./build-type-graph');
 const parseInput = require('./parse-input');
 const parseQueryTree = require('./parse-query-tree');
+const parseCreateTree = require('./parse-create-tree');
 
 //the main function to be returned (sineQL())
-const sineQL = (schema, { queryHandlers }, options = {}) => {
+const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 	let typeGraph;
 
 	try {
@@ -23,6 +24,25 @@ const sineQL = (schema, { queryHandlers }, options = {}) => {
 			switch(tokens[0]) {
 				//check for leading keywords
 				case 'create':
+					if (!createHandlers) {
+						return [501, 'Create handlers not implemented'];
+					}
+
+					if (!createHandlers[tokens[1]]) {
+						throw `Create handler not implemented for that type: ${tokens[1]}`;
+					}
+
+					const createTree = parseCreateTree(tokens, typeGraph, options);
+
+					const result = await createHandlers[tokens[1]](createTree, typeGraph);
+
+					if (options.debug) {
+						console.log('Create tree results:');
+						console.dir(result, { depth: null });
+					}
+
+					return [200, result];
+
 				case 'update':
 				case 'delete':
 					return [501, 'Keyword not implemented: ' + tokens[0]];

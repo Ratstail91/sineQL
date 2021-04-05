@@ -5,18 +5,20 @@ const sequelize = require('./database');
 const { books, authors } = require('./database/models');
 
 //create the dummy data
-sequelize.sync().then(() => {
+sequelize.sync().then(async () => {
 	//*
-	sequelize.query('DELETE FROM authors;');
-	sequelize.query('DELETE FROM books;');
+	return; //DEBUG: delete this for debugging
 
-	authors.bulkCreate([
+	await sequelize.query('DELETE FROM authors;');
+	await sequelize.query('DELETE FROM books;');
+
+	await authors.bulkCreate([
 		{ id: 1, name: 'Diana Gabaldon' },
 		{ id: 2, name: 'Emily Rodda' },
 		{ id: 3, name: 'Kenneth Grahame' }
 	]);
 
-	books.bulkCreate([
+	await books.bulkCreate([
 		{ id: 1, authorId: 1, title: 'Outlander', published: '1991', rating: 9.5 },
 		{ id: 2, authorId: 1, title: 'Dragonfly in Amber', published: '1992', rating: 9.5 },
 		{ id: 3, authorId: 1, title: 'Voyager', published: '1993', rating: 9.5 },
@@ -67,9 +69,10 @@ const sineQL = require('../source/index.js');
 //the arguments to the library
 const schema = require('./handlers/schema');
 const queryHandlers = require('./handlers/query-handlers');
+const createHandlers = require('./handlers/create-handlers');
 
 //run the setup function to create the closure (creates the type graph)
-const sine = sineQL(schema, { queryHandlers }, { debug: false });
+const sine = sineQL(schema, { queryHandlers, /* createHandlers */ }, { debug: true });
 
 //actually ask the question
 (async () => {
