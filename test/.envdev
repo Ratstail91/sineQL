@@ -1,0 +1,6 @@
+DB_HOSTNAME=localhost
+DB_DATABASE=sineQL
+DB_USERNAME=sineQL
+DB_PASSWORD=sineQL
+DB_TIMEZONE=Australia/Sydney
+DB_LOGGING=

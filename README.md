@@ -154,7 +154,7 @@ The fields can be altered as well, using the query language's built-in keywords:
 * delete
 * match
 * set
-* typeName
+* typeName (this is not used in either language, but rather is used internally)
 
 `create`, `update` and `delete` are still to be defined properly, but they'll probably work as follows.
 
@@ -226,6 +226,3 @@ delete Book {
 	match title "The Fart in the Fronds"
 }
 ```
-
-You can use as many instances of `match` and `set` as you like, as long as the result is valid.
-

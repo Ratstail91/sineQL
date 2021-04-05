@@ -1,0 +1,16 @@
+{
+  "name": "sineql-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "author": "Kayne Ruse",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "mariadb": "^2.5.3",
+    "sequelize": "^6.6.2"
+  }
+}

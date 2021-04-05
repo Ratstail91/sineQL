@@ -1,5 +1,5 @@
-const { Op } = require('./mock-sequelize');
-const { books, authors } = require('./mock-models');
+const { Op } = require('sequelize');
+const { books, authors } = require('../database/models');
 
 //the handler functions return arrays for each type, containing every element that satisfies the queries
 
@@ -31,7 +31,7 @@ const queryHandlers = {
 	//complex compound
 	Author: async (query, graph) => {
 		//get the fields alone
-		const { typeName, ...fields } = query;
+		const { typeName, match, ...fields } = query;
 
 		//hack the id into the fields list (if it's not there already)
 		fields['id'] = fields['id'] || { typeName: 'Integer', scalar: true }; //TODO: should this be default?
@@ -55,17 +55,22 @@ const queryHandlers = {
 		const nonScalars = Object.keys(fields).filter(field => !graph[fields[field].typeName].scalar);
 
 		let authorResults = await authors.findAll({
-			attributes: Object.keys(fields), //fields to find (keys)
-			where: where
+			attributes: scalars, //fields to find (keys)
+			where: where,
+			raw: true
 		}); //sequelize ORM model
 
 		const promiseArray = nonScalars.map(async nonScalar => {
+			//hack the author ID in, so it can be referenced below
+			fields[nonScalar]['authorId'] = fields[nonScalar]['authorId'] || { typeName: 'Integer', scalar: true };
+
 			//delegate to a deeper part of the tree
 			const nonScalarArray = await queryHandlers[fields[nonScalar].typeName](fields[nonScalar], graph);
 
 			//for each author, update this non-scalar field with the non-scalar's recursed value
-			authorResults.forEach(author => {
-				author[nonScalar] = nonScalarArray.filter(ns => author[nonScalar].includes(ns.id)); //using the hacked-in ID field (JOIN)
+			authorResults = authorResults.map(author => {
+				author[nonScalar] = nonScalarArray.filter(ns => ns['authorId'] == author.id);
+				return author;
 			});
 
 			//prune the authors when matching, but their results are empty
@@ -82,10 +87,8 @@ const queryHandlers = {
 
 	//simple compound
 	Book: async (query, graph) => {
-		// console.log('Book():', query);
-
 		//get the fields alone
-		const { typeName, ...fields } = query;
+		const { typeName, match, ...fields } = query;
 
 		//hack the id into the fields list (if it's not there already)
 		fields['id'] = fields['id'] || { typeName: 'Integer', scalar: true }; //TODO: should this be automatic?
@@ -104,10 +107,11 @@ const queryHandlers = {
 			});
 		}
 
-		//return the result
+		//return the result (N+1 bottleneck)
 		return await books.findAll({
-			attributes: Object.keys(fields), //fields to find
-			where: where
+			attributes: Object.keys(fields), //fields to find (everything for simple compounds)
+			where: where,
+			raw: true
 		}); //sequelize ORM model
 	}
 };
