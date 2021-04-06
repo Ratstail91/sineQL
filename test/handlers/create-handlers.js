@@ -62,10 +62,17 @@ const createHandlers = {
 		//apply the following to an array of authors
 		const promises = create.map(async author => {
 			//get the fields alone
-			const { typeName, create, match, set, ...fields } = author;
+			const { typeName, create, match, ...fields } = author;
 
 			//if we are creating a new element (default with Author as a top-level only type)
 			if (create) {
+				//check every unique field is being created
+				Object.keys(fields).forEach(field => {
+					if (graph[typeName][field].unique && !fields[field].create) {
+						throw `Must create a new value for unique fields (${typeName} ${field})`;
+					}
+				})
+
 				//check the created scalar fields (value must not exist in the database yet)
 				const createdOrs = Object.keys(fields).filter(field => fields[field].scalar && fields[field].create).map(field => { return { [field]: fields[field].create }; });
 
@@ -79,53 +86,30 @@ const createHandlers = {
 					//enter error state
 					Object.keys(fields).forEach(field => {
 						if (fields[field].create == createdFound[field]) {
-							throw `Cannot create Author ${field} with value ${fields[field].create} (value already exists)`;
+							throw `Cannot create Author field '${field}' with value '${fields[field].create}' (value already exists)`;
 						}
 					});
 
-					//no error field found, continue?
+					//no error field found, why?
+					throw 'Unknown error (createHandlers.Author)';
 				}
 
-				//create the element
+				//create the element (with created scalar fields)
 				const args = {};
-				Object.keys(fields).filter(field => fields[field].scalar).forEach(field => args[field] = fields[field].create || fields[field].set);
+				Object.keys(fields).filter(field => fields[field].scalar).forEach(field => args[field] = fields[field].create);
 				const createdAuthor = await authors.create(args);
 
-				//pass on to the books
-				Object.keys(fields).filter(field => !fields[field].scalar).forEach(nonScalar => fields[nonScalar].forEach(element => element.authorId = createdAuthor.id));
+				//pass on to the sub-objects (books)
+				Object.keys(fields).filter(field => !fields[field].scalar).forEach(nonScalar => fields[nonScalar].forEach(element => element.authorId = createdAuthor.id)); //hack in the authorId
 				Object.keys(fields).filter(field => !fields[field].scalar).forEach(nonScalar => {
 					//delegation
 					createHandlers[graph[typeName][nonScalar].typeName](fields[nonScalar], graph);
 				});
 			}
 
-			//if we are matching an existing element
-			else if (match) {
-				//check the matched scalar fields (value must exist in the database)
-				const matchedAnds = Object.keys(fields).filter(field => fields[field].scalar && fields[field].match).map(field => { return { [field]: fields[field].match }; });
-
-				//these only match one
-				const matchedFound = await authors.findOne({
-					where: {
-						[Op.and]: matchedAnds
-					}
-				});
-
-				if (!matchedFound) {
-					throw `Cannot match Author (no match exists)`;
-				}
-
-				//pass on to the books
-				Object.keys(fields).filter(field => !fields[field].scalar).forEach(nonScalar => fields[nonScalar].forEach(element => element.authorId = matchedAuthor.id));
-				Object.keys(fields).filter(field => !fields[field].scalar).forEach(nonScalar => {
-					//delegation
-					createHandlers[graph[typeName][nonScalar].typeName](fields[nonScalar], graph);
-				});
-			}
-
-			//get the remaining scalar fields without create or match ('set' by default), not used - just an error
-			else if (set) {
-				throw 'Set not implemented for create Author';
+			//just to check
+			else {
+				throw `Fall through not implemented for Author (missed create & match)`;
 			}
 		});
 
@@ -137,8 +121,85 @@ const createHandlers = {
 
 	//simple compound
 	Book: async (create, graph) => {
-		//TODO: incomplete
-		console.log('-----', create)
+		const promises = create.map(async book => {
+			//get the fields alone
+			const { typeName, authorId, create, match, ...fields } = book;
+
+			//if we are creating a new element(s)
+			if (create) {
+				//check every unique field is being created
+				Object.keys(fields).forEach(field => {
+					//authorId is hacked in from above
+					if (graph[typeName][field].unique && !fields[field].create) {
+						throw `Must create a new value for unique fields (${typeName} ${field})`;
+					}
+				})
+
+				//check the created scalar fields (value must not exist in the database yet)
+				const createdOrs = Object.keys(fields).filter(field => fields[field].scalar && fields[field].create).map(field => { return { [field]: fields[field].create }; });
+
+				const createdFound = await books.findOne({
+					where: {
+						[Op.or]: createdOrs
+					},
+				});
+
+				if (createdFound) {
+					//enter error state
+					Object.keys(fields).forEach(field => {
+						if (fields[field].create == createdFound[field]) {
+							throw `Cannot create Book field '${field}' with value '${fields[field].create}' (value already exists)`;
+						}
+					});
+
+					//no error field found, why?
+					throw 'Unknown error (createHandlers.Book)';
+				}
+
+				//create the element (with created scalar fields)
+				const args = {};
+				Object.keys(fields).filter(field => fields[field].scalar).forEach(field => args[field] = fields[field].create);
+				args['authorId'] = authorId; //hacked in
+				await books.create(args);
+			}
+
+			//pulled from query (match existing books)
+			else if (match) {
+				//get the names of matched fields
+				const matchedNames = Object.keys(fields).filter(field => fields[field].match);
+
+				//short-circuit if querying everything
+				const where = {};
+				if (matchedNames.length > 0) {
+					//build the "where" object
+					matchedNames.forEach(mn => {
+						if (fields[mn].match !== true) {
+							where[mn] = { [Op.eq]: fields[mn].match };
+						}
+					});
+				}
+
+				//don't steal books
+				where['authorId'] = { [Op.eq]: null };
+
+				//update the sub-elements
+				await books.update({
+					authorId: authorId
+				}, {
+					where: where
+				}); //sequelize ORM model
+			}
+
+			//just to check
+			else {
+				throw `Fall through not implemented for Book (missed create & match)`;
+			}
+		});
+
+		//handle promises
+		await Promise.all(promises).catch(e => console.error(e));
+
+		return null;
 	}
 };
 

@@ -36,11 +36,6 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 
 					const result = await createHandlers[tokens[1]](createTree, typeGraph);
 
-					if (options.debug) {
-						console.log('Create tree results:');
-						console.dir(result, { depth: null });
-					}
-
 					return [200, result];
 
 				case 'update':

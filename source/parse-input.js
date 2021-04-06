@@ -7,6 +7,8 @@ const parseInput = (body, allowStrings, options) => {
 		switch(body[current - 1]) {
 			case '{':
 			case '}':
+			case '[':
+			case ']':
 				//push just this symbol
 				tokens.push(body.substring(current - 1, current));
 				break;

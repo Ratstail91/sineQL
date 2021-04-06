@@ -7,7 +7,7 @@ const { books, authors } = require('./database/models');
 //create the dummy data
 sequelize.sync().then(async () => {
 	//*
-	return; //DEBUG: delete this for debugging
+//	return; //DEBUG: delete this for debugging
 
 	await sequelize.query('DELETE FROM authors;');
 	await sequelize.query('DELETE FROM books;');
@@ -72,7 +72,7 @@ const queryHandlers = require('./handlers/query-handlers');
 const createHandlers = require('./handlers/create-handlers');
 
 //run the setup function to create the closure (creates the type graph)
-const sine = sineQL(schema, { queryHandlers, /* createHandlers */ }, { debug: true });
+const sine = sineQL(schema, { queryHandlers, createHandlers }, { debug: false });
 
 //actually ask the question
 (async () => {

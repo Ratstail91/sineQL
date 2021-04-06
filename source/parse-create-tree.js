@@ -26,6 +26,7 @@ const parseCreateTree = (tokens, typeGraph, options) => {
 
 	//the return
 	const result = [];
+	const type = tokens[current - 1];
 
 	if (tokens[current] == '[') {
 		current++;
@@ -33,10 +34,10 @@ const parseCreateTree = (tokens, typeGraph, options) => {
 
 	do {
 		//read the block of lines
-		const [block, pos] = readBlock(tokens, current, tokens[current - 1], typeGraph, options);		
+		const [block, pos] = readBlock(tokens, current, type, typeGraph, options);
 
 		//insert the typename into the top-level block
-		block['typeName'] = tokens[current - 1];
+		block['typeName'] = type;
 
 		//insert create into the top-level block
 		block['create'] = true;
