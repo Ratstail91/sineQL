@@ -1,38 +1,42 @@
 const { Op } = require('sequelize');
 const { books, authors } = require('../database/models');
 
-//TODO: 'unique' may be a useful modifier, but not at this stage of development
-
 //The create handlers are supposed to handle inserting new data into a database
 //You don't have to create all associated books at the same time as the authors - you can use update later to join them
 
 //You can use the '[' and ']' symbols to create mutliple elements of data at once
 
 //'create' also counts as a modifier, indicating that a specific value is new to the database, and returning an error if it exists already OR
-//'match' is used when an existing value must already exist in the database, and returning an error if it does not OR
-//if no modifiers are specified, 'set' is used as a fallback (query for compounds, create if not found)
+//'match' is used when an existing value must already exist in the database, and returning an error if it does not
 
 /* possible create requests include:
 
 create Author {
-	name "Sydney Sheldon"
+	create name "Sydney Sheldon"
 	create books [
 		{
-			title "The Naked Face"
+			create title "The Naked Face"
 			published 1970
 		}
 		{
-			title "A Stranger in the Mirror"
+			create title "A Stranger in the Mirror"
 			published 1976
 		}
 	]
 }
 
 create Author {
-	name "Sydney Sheldon"
+	create name "Sydney Sheldon"
 	create books {
-		title "Bloodline"
-		published 1977
+		create title "Bloodline"
+		create published 1977
+	}
+}
+
+create Author {
+	create name "Sydney Sheldon"
+	match books {
+		match title "Rage of Angels"
 	}
 }
 
@@ -43,6 +47,7 @@ create Author {
 //Author array
 [{
 	typeName: 'Author',
+	create: true,
 	name: { typeName: 'String', scalar: true, create: 'Sydney Sheldon' }
 	books: [{
 		typeName: 'Book',
@@ -96,7 +101,7 @@ const createHandlers = {
 
 				//create the element (with created scalar fields)
 				const args = {};
-				Object.keys(fields).filter(field => fields[field].scalar).forEach(field => args[field] = fields[field].create);
+				Object.keys(fields).filter(field => fields[field].scalar).forEach(field => args[field] = fields[field].create || fields[field].set);
 				const createdAuthor = await authors.create(args);
 
 				//pass on to the sub-objects (books)
@@ -158,7 +163,7 @@ const createHandlers = {
 
 				//create the element (with created scalar fields)
 				const args = {};
-				Object.keys(fields).filter(field => fields[field].scalar).forEach(field => args[field] = fields[field].create);
+				Object.keys(fields).filter(field => fields[field].scalar).forEach(field => args[field] = fields[field].create || fields[field].set);
 				args['authorId'] = authorId; //hacked in
 				await books.create(args);
 			}
@@ -166,7 +171,7 @@ const createHandlers = {
 			//pulled from query (match existing books)
 			else if (match) {
 				//get the names of matched fields
-				const matchedNames = Object.keys(fields).filter(field => fields[field].match);
+				const matchedNames = Object.keys(fields).filter(field => fields[field].match || fields[field].set);
 
 				//short-circuit if querying everything
 				const where = {};
@@ -174,7 +179,7 @@ const createHandlers = {
 					//build the "where" object
 					matchedNames.forEach(mn => {
 						if (fields[mn].match !== true) {
-							where[mn] = { [Op.eq]: fields[mn].match };
+							where[mn] = { [Op.eq]: fields[mn].match || fields[mn].set };
 						}
 					});
 				}
