@@ -161,13 +161,13 @@ The fields can be altered as well, using the query language's built-in keywords:
 
 ### Create
 
-When using `create`, `match` will find an existing record and associate that with the created values (multiple matches is an error):
+When using `create`, `match` will find an existing record and associate that with the created values:
 
 ```
-Author {
-	match name "Kenneth Grahame"
-	create books {
-		create title "The Wind in the Willows"
+create Author {
+	create name "Kenneth Grahame"
+	match books {
+		match title "The Wind in the Willows"
 	}
 }
 ```
@@ -177,25 +177,25 @@ You can create multiple records at once by surrounding them with `[]`:
 ```
 create Book [
 	{
-		set title "The Philosepher's Kidney Stone"
+		create title "The Philosepher's Kidney Stone"
 	}
 	{
-		set title "The Chamber Pot of Secrets"
+		create title "The Chamber Pot of Secrets"
 	}
 	{
-		set title "The Prisoner of Aunt Kazban"
+		create title "The Prisoner of Aunt Kazban"
 	}
 	{
-		set title "The Goblet of the Fire Cocktail"
+		create title "The Goblet of the Fire Cocktail"
 	}
 	{
-		set title "The Order for Kleenex"
+		create title "The Order for Kleenex"
 	}
 	{
-		set title "The Half-Priced Pharmacy"
+		create title "The Half-Priced Pharmacy"
 	}
 	{
-		set title "Yeah, I Got Nothing"
+		create title "Yeah, I Got Nothing"
 	}
 ]
 ```
