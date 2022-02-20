@@ -71,7 +71,7 @@ const compoundAuthorQuery = `
 create Author {
 	create name "J. K. Rolling"
 	match books [
-		{ match title "The Philosepher's Kidney Stone" }
+		{ match title "The Philosopher's Kidney Stone" }
 		{ match title "The Chamber Pot of Secrets" }
 		{ match title "The Prisoner of Aunt Kazban" }
 		{ match title "The Goblet of the Fire Cocktail" }

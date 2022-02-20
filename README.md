@@ -177,7 +177,7 @@ You can create multiple records at once by surrounding them with `[]`:
 ```
 create Book [
 	{
-		create title "The Philosepher's Kidney Stone"
+		create title "The Philosopher's Kidney Stone"
 	}
 	{
 		create title "The Chamber Pot of Secrets"
@@ -207,7 +207,7 @@ When using `update`, `match` will find all existing records and update those usi
 ```
 update Book {
 	match title "The Wind in the Willows"
-	set published 1908
+	set published "1908-4-1"
 }
 ```
 
@@ -216,6 +216,41 @@ update Book {
 	match title "The Wind in the Willows"
 	set title "The Fart in the Fronds"
 }
+```
+
+You can run multiple updates at once by surrounding them with `[]`:
+
+```
+update Book [
+	{
+		match title "The Philosopher's Kidney Stone"
+		set published "1997-06-26"
+	}
+	{
+		match title "The Chamber Pot of Secrets"
+		set published "1998-07-02"
+	}
+	{
+		match title "The Prisoner of Aunt Kazban"
+		set published "1999-07-08"
+	}
+	{
+		match title "The Goblet of the Fire Cocktail"
+		set published "2000-07-08"
+	}
+	{
+		match title "The Order for Kleenex"
+		set published "2003-06-21"
+	}
+	{
+		match title "The Half-Priced Pharmacy"
+		set published "2005-07-16"
+	}
+	{
+		match title "Yeah, I Got Nothing"
+		set published "2007-07-21"
+	}
+]
 ```
 
 ### Delete
@@ -227,3 +262,32 @@ delete Book {
 	match title "The Fart in the Fronds"
 }
 ```
+
+You can run multiple deletes at once by surrounding them with `[]`:
+
+```
+delete Book [
+	{
+		match title "The Philosopher's Kidney Stone"
+	}
+	{
+		match title "The Chamber Pot of Secrets"
+	}
+	{
+		match title "The Prisoner of Aunt Kazban"
+	}
+	{
+		match title "The Goblet of the Fire Cocktail"
+	}
+	{
+		match title "The Order for Kleenex"
+	}
+	{
+		match title "The Half-Priced Pharmacy"
+	}
+	{
+		match title "Yeah, I Got Nothing"
+	}
+]
+```
+
