@@ -1,5 +1,5 @@
 //build the tokens into a single object of types representing the initial query
-const parseCreateTree = (tokens, typeGraph, options) => {
+const parseCreateTree = (tokens, typeGraph, options = {}) => {
 	let current = 1; //primed
 
 	//check this is a create command
@@ -94,6 +94,9 @@ const readBlock = (tokens, current, superType, typeGraph, options) => {
 				//insert the typename into the block
 				block['typeName'] = typeGraph[superType][fieldName].typeName;
 
+				//insert the unique modifier if it's set
+				block['unique'] = typeGraph[superType][fieldName].unique;
+
 				//insert the block-level modifier signal
 				if (modifier) {
 					block[modifier] = true;
@@ -121,6 +124,9 @@ const readBlock = (tokens, current, superType, typeGraph, options) => {
 		else {
 			//save the typeGraph type into result
 			result[fieldName] = JSON.parse(JSON.stringify( typeGraph[ typeGraph[superType][fieldName].typeName ] ));
+
+			//insert the unique modifier if it's set
+			result[fieldName]['unique'] = typeGraph[superType][fieldName].unique;
 
 			//insert the block-level modifier signal
 			if (modifier) {

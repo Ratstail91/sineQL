@@ -40,7 +40,7 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 
 				case 'update':
 				case 'delete':
-					return [501, 'Keyword not implemented: ' + tokens[0]];
+					return [501, 'Keyword not yet implemented: ' + tokens[0]];
 					//TODO: implement these keywords
 					break;
 

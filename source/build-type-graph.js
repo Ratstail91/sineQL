@@ -4,7 +4,7 @@ const { eatBlock, checkAlphaNumeric } = require('./utils');
 const parseInput = require('./parse-input');
 
 //parse the schema into a type graph
-const buildTypeGraph = (schema, options) => {
+const buildTypeGraph = (schema, options = {}) => {
 	//the default graph
 	let graph = {
 		String: { typeName: 'String', scalar: true },

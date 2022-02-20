@@ -1,5 +1,5 @@
 //break the body down into tokens
-const parseInput = (body, allowStrings, options) => {
+const parseInput = (body, allowStrings, options = {}) => {
 	let current = 0;
 	tokens = [];
 
