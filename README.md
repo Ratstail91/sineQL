@@ -154,7 +154,6 @@ The fields can be altered as well, using the query language's built-in keywords:
 * update
 * delete
 * match
-* set
 * typeName (this is not used in either language, but rather is used internally)
 
 `create`, `update` and `delete` are still to be defined properly, but they'll probably work as follows.
@@ -202,19 +201,19 @@ create Book [
 
 ### Update
 
-When using `update`, `match` will find all existing records and update those using the `set` keyword:
+When using `update`, `match` will find all existing records and update those using the `update` keyword:
 
 ```
 update Book {
 	match title "The Wind in the Willows"
-	set published "1908-4-1"
+	update published "1908-04-01"
 }
 ```
 
 ```
 update Book {
 	match title "The Wind in the Willows"
-	set title "The Fart in the Fronds"
+	update title "The Fart in the Fronds"
 }
 ```
 
@@ -224,31 +223,31 @@ You can run multiple updates at once by surrounding them with `[]`:
 update Book [
 	{
 		match title "The Philosopher's Kidney Stone"
-		set published "1997-06-26"
+		update published "1997-06-26"
 	}
 	{
 		match title "The Chamber Pot of Secrets"
-		set published "1998-07-02"
+		update published "1998-07-02"
 	}
 	{
 		match title "The Prisoner of Aunt Kazban"
-		set published "1999-07-08"
+		update published "1999-07-08"
 	}
 	{
 		match title "The Goblet of the Fire Cocktail"
-		set published "2000-07-08"
+		update published "2000-07-08"
 	}
 	{
 		match title "The Order for Kleenex"
-		set published "2003-06-21"
+		update published "2003-06-21"
 	}
 	{
 		match title "The Half-Priced Pharmacy"
-		set published "2005-07-16"
+		update published "2005-07-16"
 	}
 	{
 		match title "Yeah, I Got Nothing"
-		set published "2007-07-21"
+		update published "2007-07-21"
 	}
 ]
 ```

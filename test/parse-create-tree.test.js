@@ -24,7 +24,7 @@ const simpleBookQuery = `
 
 create Book {
 	create title "The Wind in the Willows"
-	create published "1908"
+	create published "1908-04-01"
 	create rating 9.5
 }
 

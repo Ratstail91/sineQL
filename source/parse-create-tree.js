@@ -130,9 +130,21 @@ const readBlock = (tokens, current, superType, typeGraph, options) => {
 
 			//insert the block-level modifier signal
 			if (modifier) {
-				result[fieldName][modifier] = tokens[current++];
+				//handle integers and floats exposed to the user
+				switch(result[fieldName].typeName) {
+					case 'Integer': 
+					result[fieldName][modifier] = parseInt(tokens[current++]);
+						break;
+
+					case 'Float':
+						result[fieldName][modifier] = parseFloat(tokens[current++]);
+						break;
+
+					default: //everything else is a string (including booleans)
+						result[fieldName][modifier] = tokens[current++];
+				}
 			} else {
-				result[fieldName]['set'] = tokens[current++];
+				throw `Modifier expected for ${fieldName} (either create or match)`;
 			}
 
 			if (options.debug) {

@@ -2,6 +2,7 @@ const buildTypeGraph = require('./build-type-graph');
 const parseInput = require('./parse-input');
 const parseQueryTree = require('./parse-query-tree');
 const parseCreateTree = require('./parse-create-tree');
+const parseUpdateTree = require('./parse-update-tree');
 
 //the main function to be returned (sineQL())
 const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
@@ -39,6 +40,20 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 					return [200, result];
 
 				case 'update':
+					if (!updateHandlers) {
+						return [501, 'Update handlers not implemented'];
+					}
+
+					if (!updateHandlers[tokens[1]]) {
+						throw `Update handler not implemented for that type: ${tokens[1]}`;
+					}
+
+					const updateTree = parseUpdateTree(tokens, typeGraph, options);
+
+					const result = await updateHandlers[tokens[1]](updateTree, typeGraph);
+
+					return [200, result];
+
 				case 'delete':
 					return [501, 'Keyword not yet implemented: ' + tokens[0]];
 					//TODO: implement these keywords
