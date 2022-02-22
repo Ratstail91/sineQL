@@ -29,10 +29,10 @@ app.use(express.text());
 //test the library
 const sineQL = require('sineql');
 const schema = require('./schema.js');
-const queryHandler = require('./query-handler.js');
+const queryHandlers = require('./query-handlers.js');
 
-//omit 'createHandler', 'updateHandler' or 'deleteHandler' to disable those methods
-const sine = sineQL(schema, { queryHandler }, { debug: true });
+//omit 'createHandlers', 'updateHandlers' or 'deleteHandlers' to disable those methods
+const sine = sineQL(schema, { queryHandlers }, { debug: true });
 
 //open the endpoint
 app.post('/sineql', async (req, res) => {
