@@ -55,9 +55,19 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 					return [200, result];
 
 				case 'delete':
-					return [501, 'Keyword not yet implemented: ' + tokens[0]];
-					//TODO: implement these keywords
-					break;
+					if (!deleteHandlers) {
+						return [501, 'Delete handlers not implemented'];
+					}
+
+					if (!deleteHandlers[tokens[1]]) {
+						throw `Delete handler not implemented for that type: ${tokens[1]}`;
+					}
+
+					const deleteTree = parseDeleteTree(tokens, typeGraph, options);
+
+					const result = await deleteHandlers[tokens[1]](deleteTree, typeGraph);
+
+					return [200, result];
 
 				//no leading keyword - regular query
 				default: {
@@ -65,11 +75,11 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 						return [501, 'Query handlers not implemented'];
 					}
 
-					const queryTree = parseQueryTree(tokens, typeGraph, options);
-
-					if (!queryHandlers[queryTree.typeName]) {
-						throw `Query handler not implemented for that type: ${queryTree.typeName}`;
+					if (!queryHandlers[tokens[0]]) {
+						throw `Query handler not implemented for that type: ${tokens[0]}`;
 					}
+
+					const queryTree = parseQueryTree(tokens, typeGraph, options);
 
 					const result = await queryHandlers[queryTree.typeName](queryTree, typeGraph);
 
