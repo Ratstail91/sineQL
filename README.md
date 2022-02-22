@@ -14,6 +14,32 @@ The handler's definition is left up to the user.
 * Each top-level keyword (and queries) is optional
 * No package dependencies
 
+## Live Demo
+
+Using the following schema:
+
+```
+type Weather {
+	String city
+	Float latitude
+	Float longitude
+
+	String last_updated
+	Float temp_c
+	Float temp_f
+	String condition
+	Float wind_mph
+	Float wind_kph
+	String wind_dir
+}
+```
+
+You can match any city OR any latitude + longitude, then query any of the other fields.
+
+```bash
+curl sineql-demo.krgamestudios.com/sineql -L -X POST -H "Content-Type: text/plain" -d 'Weather { match city "Sydney" temp_c condition }'
+```
+
 ## Example Server
 
 A simple express server using sineQL.
