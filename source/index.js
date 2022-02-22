@@ -3,9 +3,10 @@ const parseInput = require('./parse-input');
 const parseQueryTree = require('./parse-query-tree');
 const parseCreateTree = require('./parse-create-tree');
 const parseUpdateTree = require('./parse-update-tree');
+const parseDeleteTree = require('./parse-delete-tree');
 
 //the main function to be returned (sineQL())
-const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
+const sineQL = (schema, { queryHandlers, createHandlers, updateHandlers, deleteHandlers }, options = {}) => {
 	let typeGraph;
 
 	try {
@@ -24,9 +25,9 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 
 			switch(tokens[0]) {
 				//check for leading keywords
-				case 'create':
+				case 'create': {
 					if (!createHandlers) {
-						return [501, 'Create handlers not implemented'];
+						return [405, 'Create handlers not implemented'];
 					}
 
 					if (!createHandlers[tokens[1]]) {
@@ -38,10 +39,11 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 					const result = await createHandlers[tokens[1]](createTree, typeGraph);
 
 					return [200, result];
+				}
 
-				case 'update':
+				case 'update': {
 					if (!updateHandlers) {
-						return [501, 'Update handlers not implemented'];
+						return [405, 'Update handlers not implemented'];
 					}
 
 					if (!updateHandlers[tokens[1]]) {
@@ -53,10 +55,11 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 					const result = await updateHandlers[tokens[1]](updateTree, typeGraph);
 
 					return [200, result];
+				}
 
-				case 'delete':
+				case 'delete': {
 					if (!deleteHandlers) {
-						return [501, 'Delete handlers not implemented'];
+						return [405, 'Delete handlers not implemented'];
 					}
 
 					if (!deleteHandlers[tokens[1]]) {
@@ -68,11 +71,12 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 					const result = await deleteHandlers[tokens[1]](deleteTree, typeGraph);
 
 					return [200, result];
+				}
 
 				//no leading keyword - regular query
 				default: {
 					if (!queryHandlers) {
-						return [501, 'Query handlers not implemented'];
+						return [405, 'Query handlers not implemented'];
 					}
 
 					if (!queryHandlers[tokens[0]]) {
@@ -94,7 +98,7 @@ const sineQL = (schema, { queryHandlers, createHandlers }, options = {}) => {
 		}
 		catch(e) {
 			console.error('Error:', e);
-			return [400, e.stack || e];
+			return [400, e];
 		}
 	};
 };
