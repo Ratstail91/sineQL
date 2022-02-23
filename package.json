@@ -11,8 +11,10 @@
     "url": "git+https://github.com/Ratstail91/sineQL.git"
   },
   "keywords": [
+    "sineql",
     "graphql",
     "rest",
+    "api",
     "query"
   ],
   "author": "Kayne Ruse",
