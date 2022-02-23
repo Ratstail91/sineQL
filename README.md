@@ -95,7 +95,7 @@ module.exports = schema;
 
 ```js
 //there's a different handler object for query, create, update and delete
-const queryHandler = {
+const queryHandlers = {
 	Author: (query, graph) => {
 		//TODO: implement this
 	},
@@ -104,7 +104,7 @@ const queryHandler = {
 	},
 };
 
-module.exports = queryHandler;
+module.exports = queryHandlers;
 ```
 
 Create a matching client-side function pointing to the server.
@@ -112,18 +112,18 @@ Create a matching client-side function pointing to the server.
 ```js
 //create the wave function, wrapping a fetch to the server
 const wave = body => fetch('http://example.com/sineql', {
-    method: 'POST',
-    headers: {
-       'Content-Type': 'text/plain'
-    },
-    body: body
+	method: 'POST',
+	headers: {
+		'Content-Type': 'text/plain'
+	},
+	body: body
 });
 
 //get a list of content
 wave('Author { name books { title } }')
-    .then(blob => blob.text())
-    .then(text => console.log(text))
-    .catch(e => console.error(e))
+	.then(blob => blob.text())
+	.then(text => console.log(text))
+	.catch(e => console.error(e))
 ;
 ```
 
