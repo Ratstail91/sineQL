@@ -23,8 +23,8 @@ const sineQL = (schema, { queryHandlers, createHandlers, updateHandlers, deleteH
 			//parse the query
 			const tokens = parseInput(reqBody, true, options);
 
+			//check for leading keywords (create, update, delete)
 			switch(tokens[0]) {
-				//check for leading keywords
 				case 'create': {
 					if (!createHandlers) {
 						return [405, 'Create handlers not implemented'];
@@ -36,9 +36,20 @@ const sineQL = (schema, { queryHandlers, createHandlers, updateHandlers, deleteH
 
 					const createTree = parseCreateTree(tokens, typeGraph, options);
 
-					const result = await createHandlers[tokens[1]](createTree, typeGraph);
+					try {
+						const result = await createHandlers[tokens[1]](createTree, typeGraph);
 
-					return [200, result];
+						if (options.debug) {
+							console.log('Create tree results:');
+							console.dir(result, { depth: null });
+						}
+	
+						return [200, result];
+					}
+					catch(e) {
+						console.error('Create error:', e);
+						return [400, e];
+					}
 				}
 
 				case 'update': {
@@ -52,9 +63,20 @@ const sineQL = (schema, { queryHandlers, createHandlers, updateHandlers, deleteH
 
 					const updateTree = parseUpdateTree(tokens, typeGraph, options);
 
-					const result = await updateHandlers[tokens[1]](updateTree, typeGraph);
+					try {
+						const result = await updateHandlers[tokens[1]](updateTree, typeGraph);
 
-					return [200, result];
+						if (options.debug) {
+							console.log('Update tree results:');
+							console.dir(result, { depth: null });
+						}
+	
+						return [200, result];
+					}
+					catch(e) {
+						console.error('Update error:', e);
+						return [400, e];
+					}
 				}
 
 				case 'delete': {
@@ -68,9 +90,20 @@ const sineQL = (schema, { queryHandlers, createHandlers, updateHandlers, deleteH
 
 					const deleteTree = parseDeleteTree(tokens, typeGraph, options);
 
-					const result = await deleteHandlers[tokens[1]](deleteTree, typeGraph);
+					try {
+						const result = await deleteHandlers[tokens[1]](deleteTree, typeGraph);
 
-					return [200, result];
+						if (options.debug) {
+							console.log('Delete tree results:');
+							console.dir(result, { depth: null });
+						}
+	
+						return [200, result];
+					}
+					catch(e) {
+						console.error('Delete error:', e);
+						return [400, e];
+					}
 				}
 
 				//no leading keyword - regular query
@@ -85,19 +118,25 @@ const sineQL = (schema, { queryHandlers, createHandlers, updateHandlers, deleteH
 
 					const queryTree = parseQueryTree(tokens, typeGraph, options);
 
-					const result = await queryHandlers[queryTree.typeName](queryTree, typeGraph);
+					try {
+						const result = await queryHandlers[queryTree.typeName](queryTree, typeGraph);
 
-					if (options.debug) {
-						console.log('Query tree results:');
-						console.dir(result, { depth: null });
+						if (options.debug) {
+							console.log('Query tree results:');
+							console.dir(result, { depth: null });
+						}
+	
+						return [200, result];
 					}
-
-					return [200, result];
+					catch(e) {
+						console.error('Query error:', e);
+						return [400, e];
+					}
 				}
 			}
 		}
 		catch(e) {
-			console.error('Error:', e);
+			console.error('Input error:', e);
 			return [400, e];
 		}
 	};
