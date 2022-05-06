@@ -134,6 +134,7 @@ The schema language is a layout of how queries should be made, as well as what c
 * type
 * scalar
 * unique
+* typeName (this is a reserved keyword - it is not used in either language, but rather is used internally)
 
 `type` is used for defining new compound types. `scalar` is for defining new scalar types, such as `Date`. `unique` is a modifier on a field, indicating that it is unique in the database.
 
@@ -180,7 +181,6 @@ The fields can be altered as well, using the query language's built-in keywords:
 * update
 * delete
 * match
-* typeName (this is a reserved keyword - it is not used in either language, but rather is used internally)
 
 ### Create
 
