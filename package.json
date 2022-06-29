@@ -4,7 +4,7 @@
   "description": "A simple to use graphQL clone",
   "main": "source/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --coverage --collectCoverageFrom=source/**/*.js"
   },
   "repository": {
     "type": "git",
