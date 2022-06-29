@@ -18,7 +18,7 @@
     "query"
   ],
   "author": "Kayne Ruse",
-  "license": "ISC",
+  "license": "zlib",
   "bugs": {
     "url": "https://github.com/Ratstail91/sineQL/issues"
   },
