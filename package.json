@@ -1,6 +1,6 @@
 {
   "name": "sineql",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A simple to use graphQL clone",
   "main": "source/index.js",
   "scripts": {
